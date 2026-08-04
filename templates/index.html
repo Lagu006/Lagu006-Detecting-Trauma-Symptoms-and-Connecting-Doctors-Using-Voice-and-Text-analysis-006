@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraumaGuard AI — Clinical Trauma & Mental Health Stabilization</title>
+  <meta name="description" content="AI-powered trauma recovery, acute distress tracking, emergency SOS, and psychiatric clinician directory.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- ================= HEADER & NAVIGATION ================= -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-text">
+          <h1>TraumaGuard AI</h1>
+          <span>FastAPI + SQLite Core</span>
+        </div>
+      </a>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" data-view="dashboard">📊 Dashboard</button>
+        <button class="tab-btn emergency-tab" data-view="emergency">🚨 Emergency SOS</button>
+        <button class="tab-btn" data-view="reports">📄 Clinical Reports</button>
+        <button class="tab-btn" data-view="doctors">🩺 Specialists</button>
+        <button class="tab-btn" data-view="chat">💬 AI Chat</button>
+      </nav>
+
+      <div class="status-badge">
+        <div class="pulse-dot"></div>
+        <span>FastAPI Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN APP VIEWS ================= -->
+  <main class="app-content">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view-section active">
+      <div class="page-header">
+        <div>
+          <h2>Patient Distress & Stability Dashboard</h2>
+          <p>Real-time longitudinal telemetry and daily somatic check-in.</p>
+        </div>
+        <button onclick="downloadClinicalPdf()" class="btn-primary" id="download-pdf-btn">
+          📥 Download Doctor PDF (ReportLab)
+        </button>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid-3">
+        <div class="glass-card stat-card">
+          <span class="stat-label">Average Distress Index</span>
+          <div class="stat-value" id="stat-avg-distress">35 <small>/100</small></div>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Total SQLite Records</span>
+          <div class="stat-value" id="stat-total-logs">6 <small>entries</small></div>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Care Network Status</span>
+          <div class="stat-value" style="color:var(--emerald);">Active <small>GPS Ready</small></div>
+        </div>
+      </div>
+
+      <!-- Quick Mood Check-in Box -->
+      <div class="checkin-box">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;margin-bottom:0.25rem;">
+          ⚡ Quick Mood & Somatic Check-in
+        </h3>
+        <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">
+          Rate your distress level and record any recent flashback triggers directly into the SQLite database.
+        </p>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span style="font-weight:600;font-size:0.9rem;">Distress Level Rating</span>
+            <span class="distress-number" id="distress-val-display">35 / 100</span>
+          </div>
+          <input type="range" id="distress-slider" min="0" max="100" value="35" oninput="updateDistressValue(this.value)">
+        </div>
+
+        <div class="mood-tags-row">
+          <button type="button" class="mood-tag-btn active" onclick="setMoodTag('Calm', this)">🌿 Calm</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Anxious', this)">⚡ Anxious</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Restless', this)">🌊 Restless</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Panic', this)">🔥 Panic</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Overwhelmed', this)">💥 Overwhelmed</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Optimistic', this)">✨ Optimistic</button>
+        </div>
+
+        <input type="text" id="mood-note-input" class="custom-input" placeholder="Notes (e.g., sound triggers, chest tightness, sleep quality, grounding effect)...">
+
+        <button onclick="submitMoodCheckin(event)" class="btn-primary">
+          💾 Record Check-in to SQLite
+        </button>
+      </div>
+
+      <!-- Distress Trend & Recent Logs -->
+      <div class="grid-2">
+        <div class="glass-card">
+          <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:1rem;">
+            📈 14-Day Distress Trend
+          </h3>
+          <div id="chart-bars-container" style="display:flex;align-items:flex-end;gap:0.5rem;height:200px;padding-top:1rem;border-bottom:1px solid var(--border-color);">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:1rem;">
+            🕒 Recent SQLite Check-ins
+          </h3>
+          <div id="recent-logs-list">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. EMERGENCY SOS VIEW -->
+    <section id="view-emergency" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2 style="color:var(--emergency);">🚨 Immediate Crisis Support & Emergency SOS</h2>
+          <p>Direct broadcast to emergency contacts, live GPS telemetry, and 24/7 crisis hotlines.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-family:var(--font-mono);font-size:0.8rem;background:rgba(239,68,68,0.15);color:var(--emergency);padding:0.4rem 0.8rem;border-radius:var(--radius-full);">
+          📍 <span id="geo-location-text">Acquiring GPS...</span>
+        </div>
+      </div>
+
+      <!-- SOS Button -->
+      <div class="sos-trigger-card">
+        <button id="sos-main-btn" onclick="activateEmergencySOS()" class="sos-btn">
+          <span>🚨 ACTIVATE EMERGENCY SOS</span>
+          <small>Broadcasts live coordinates to emergency contacts & dispatches incident code</small>
+        </button>
+      </div>
+
+      <!-- Active SOS Confirmation Banner (Hidden by default) -->
+      <div id="sos-active-banner" class="glass-card" style="display:none;border-left:4px solid var(--emergency);background:rgba(239,68,68,0.08);margin-bottom:2rem;">
+        <h3 style="color:var(--emergency);font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">
+          ✅ Emergency SOS Dispatched via FastAPI Backend
+        </h3>
+        <p style="font-size:0.85rem;color:var(--text-primary);margin-bottom:0.75rem;">
+          Your GPS beacon and patient details have been logged to the SQLite emergency registry.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:1.5rem;font-size:0.8rem;font-family:var(--font-mono);">
+          <div>Ref ID: <b id="sos-ref-id" style="color:var(--text-primary);">—</b></div>
+          <div>Time: <b id="sos-time" style="color:var(--text-primary);">—</b></div>
+          <div><a id="sos-map-link" href="#" target="_blank" style="color:var(--primary);text-decoration:underline;">🗺️ View Live Coordinates on Google Maps →</a></div>
+        </div>
+      </div>
+
+      <!-- Crisis Hotlines -->
+      <div class="grid-2" style="margin-bottom:2rem;">
+        <a href="tel:112" class="glass-card" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:1rem;border-left:4px solid var(--emergency);">
+          <div style="font-size:2rem;">📞</div>
+          <div>
+            <div style="font-weight:700;font-size:1.05rem;">National Emergency Helpline (112)</div>
+            <div style="color:var(--text-secondary);font-size:0.8rem;">Police, Fire & Ambulance Rapid Response</div>
+          </div>
+        </a>
+        <a href="tel:14416" class="glass-card" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:1rem;border-left:4px solid var(--primary);">
+          <div style="font-size:2rem;">🧠</div>
+          <div>
+            <div style="font-weight:700;font-size:1.05rem;">Tele-MANAS Crisis Support (14416)</div>
+            <div style="color:var(--text-secondary);font-size:0.8rem;">Govt. 24x7 Mental Health & Trauma Assistance</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Verified Trauma Centers Grid -->
+      <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;margin-bottom:1rem;">
+        🏥 Verified 24/7 Psychiatric Trauma Centers (SQLite DB)
+      </h3>
+      <div id="facilities-list" class="grid-2" style="margin-bottom:2rem;">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- Box Breathing Exercise -->
+      <div class="glass-card box-breathing-widget">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;">
+          🌬️ Somatic Grounding: 4-4-4-4 Box Breathing
+        </h3>
+        <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.25rem;">
+          Inhale 4s • Hold 4s • Exhale 4s • Hold 4s
+        </p>
+        <div id="breathe-visual-circle" class="breathe-circle">
+          <span id="breathe-status-text">Ready</span>
+        </div>
+        <button id="breathe-toggle-btn" onclick="toggleBreathing()" class="btn-primary">
+          Start 4-4-4-4 Breathing
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. CLINICAL REPORTS VIEW -->
+    <section id="view-reports" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>📄 Clinical Reports & Doctor Export</h2>
+          <p>Longitudinal metrics, AI stability trajectory, and official PDF summary generation.</p>
+        </div>
+        <button onclick="downloadClinicalPdf()" class="btn-primary">
+          📥 Generate Doctor PDF (ReportLab)
+        </button>
+      </div>
+
+      <!-- AI Trajectory Banner -->
+      <div class="glass-card" style="border-left:4px solid var(--primary);margin-bottom:2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:var(--primary);">
+            ✨ AI Clinical Pattern & Trajectory Analysis
+          </div>
+          <span id="insight-trajectory-badge" style="font-family:var(--font-mono);font-size:0.75rem;padding:0.25rem 0.6rem;border-radius:var(--radius-full);font-weight:700;">
+            TRAJECTORY: EVALUATING
+          </span>
+        </div>
+        <p id="insight-description" style="color:var(--text-primary);font-size:0.925rem;font-weight:500;margin-bottom:1rem;">
+          Loading clinical insights from SQLite database...
+        </p>
+
+        <div class="grid-2" style="font-size:0.85rem;">
+          <div style="background:var(--bg-surface);padding:1rem;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+            <b style="color:var(--text-secondary);display:block;margin-bottom:0.5rem;">Identified Themes:</b>
+            <div id="insight-themes-list">—</div>
+          </div>
+          <div style="background:rgba(2,132,199,0.06);padding:1rem;border-radius:var(--radius-md);border:1px solid rgba(2,132,199,0.2);">
+            <b style="color:var(--primary);display:block;margin-bottom:0.5rem;">Guidance Recommendation:</b>
+            <div id="insight-recommendation" style="color:var(--text-secondary);">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DOCTORS SPECIALISTS VIEW -->
+    <section id="view-doctors" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>🩺 Verified Psychiatrists & Trauma Specialists</h2>
+          <p>Consult with certified crisis psychologists, EMDR therapists, and trauma physicians across India.</p>
+        </div>
+      </div>
+
+      <div id="doctors-grid" class="grid-3">
+        <!-- Rendered by app.js from SQLite -->
+      </div>
+    </section>
+
+    <!-- 5. AI CHAT VIEW -->
+    <section id="view-chat" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>💬 Clinical Mental Health Assistant</h2>
+          <p>24/7 empathetic trauma-informed guidance, somatic grounding, and crisis triage.</p>
+        </div>
+      </div>
+
+      <!-- Quick prompts -->
+      <div style="display:flex;gap:0.5rem;overflow-x:auto;padding-bottom:0.75rem;margin-bottom:0.5rem;">
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('I feel intense panic and chest tightness right now.')">⚡ Panic attack help</button>
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('I experienced a sudden trauma flashback.')">🌊 Flashback grounding</button>
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('I cannot sleep due to stress and racing thoughts.')">🌙 Sleep & insomnia</button>
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('How can I book a trauma psychiatrist?')">🩺 Book specialist</button>
+      </div>
+
+      <div class="chat-container">
+        <div id="chat-messages-box" class="chat-messages">
+          <div class="chat-bubble assistant">
+            <div class="chat-tag">Clinical Intake • TraumaGuard AI</div>
+            <div>Hello Lagu, I am here to support your stabilization and recovery. How are you feeling right now? You can share any physical symptoms, thoughts, or distress triggers.</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-message-input" placeholder="Type your message or symptom (e.g., 'feeling anxious after a loud sound')...">
+          <button onclick="sendChatMessage()" class="btn-primary" style="border-radius:var(--radius-full);">
+            Send ➤
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= BOOKING MODAL POPUP ================= -->
+  <div id="booking-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;">Request Consultation</h3>
+        <button onclick="closeBookingModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.25rem;cursor:pointer;">✕</button>
+      </div>
+      <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">
+        Selected Specialist: <b id="modal-doc-name" style="color:var(--primary);">—</b>
+      </p>
+
+      <form onsubmit="submitDoctorBooking(event)">
+        <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">
+          Preferred Date & Time
+        </label>
+        <input type="datetime-local" id="booking-date-input" required class="custom-input">
+
+        <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">
+          Symptoms / Reason for Visit
+        </label>
+        <textarea id="booking-notes-input" rows="3" class="custom-input" placeholder="Briefly describe what you'd like to address..."></textarea>
+
+        <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+          <button type="button" onclick="closeBookingModal()" style="flex:1;background:var(--bg-surface);border:1px solid var(--border-color);color:var(--text-secondary);padding:0.75rem;border-radius:var(--radius-md);cursor:pointer;">
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">
+            Confirm Booking
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Client Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
