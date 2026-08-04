@@ -13,7 +13,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { MessageSquare, Stethoscope, Activity, TrendingUp, AlertOctagon, Mic } from "lucide-react";
+import { MessageSquare, Stethoscope, Activity, TrendingUp, Mic, FileSpreadsheet } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -184,17 +184,17 @@ function DashboardPage() {
             to="/records"
           />
           <Link
-            to="/emergency"
-            className="block bg-emergency text-emergency-foreground rounded-2xl p-5 hover:opacity-95 transition-opacity"
+            to="/reports"
+            className="block bg-primary text-primary-foreground rounded-2xl p-5 hover:opacity-95 transition-opacity"
           >
             <div className="flex items-center gap-2 mb-1">
-              <AlertOctagon className="size-4" />
+              <FileSpreadsheet className="size-4" />
               <span className="text-[10px] font-mono font-bold tracking-widest uppercase">
-                Emergency
+                Clinical Reports
               </span>
             </div>
-            <div className="font-display font-bold">SOS Protocol</div>
-            <div className="text-xs opacity-80">One tap to activate</div>
+            <div className="font-display font-bold">Generate Medical PDF</div>
+            <div className="text-xs opacity-80">Export patient progress summary</div>
           </Link>
         </div>
       </div>

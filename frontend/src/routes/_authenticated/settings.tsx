@@ -137,7 +137,7 @@ function SettingsPage() {
       <div className="border-b border-border pb-2 pt-4">
         <h2 className="text-xl font-display font-bold tracking-tight">Notifications</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Control emergency alerts, reminders and how you're contacted.
+          Control reminders, weekly reports and how you're contacted.
         </p>
       </div>
       <NotificationSettings />

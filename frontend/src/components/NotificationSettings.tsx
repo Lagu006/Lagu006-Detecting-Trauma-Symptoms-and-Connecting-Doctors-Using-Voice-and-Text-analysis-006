@@ -110,28 +110,6 @@ export function NotificationSettings() {
 
   return (
     <div className="space-y-6">
-      <Section icon={<Siren className="size-4 text-destructive" />} title="Emergency alerts">
-        <Toggle
-          label="Emergency SOS alerts"
-          hint="Notify me and my contact whenever an SOS is triggered"
-          checked={prefs.emergency_alerts}
-          onChange={(v) => set("emergency_alerts", v)}
-        />
-        <Toggle
-          label="High-risk crisis escalation"
-          hint="Alert me when the AI detects severe or high-risk symptoms"
-          checked={prefs.crisis_escalation}
-          onChange={(v) => set("crisis_escalation", v)}
-        />
-        <Field label="Emergency contact phone">
-          <input
-            value={prefs.emergency_contact_phone}
-            onChange={(e) => set("emergency_contact_phone", e.target.value)}
-            placeholder="+91 00000-00000"
-            className="ns-input"
-          />
-        </Field>
-      </Section>
 
       <Section icon={<BellRing className="size-4 text-primary" />} title="Reminders">
         <Toggle

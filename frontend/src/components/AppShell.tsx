@@ -8,7 +8,6 @@ import {
   Stethoscope,
   Bell,
   Settings,
-  AlertOctagon,
   HeartPulse,
   Menu,
   X,
@@ -60,9 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <span className="font-display font-bold">TraumaGuard</span>
         </div>
-        <Link to="/emergency" className="p-2 -mr-2 text-emergency">
-          <AlertOctagon className="size-5" />
-        </Link>
+        <div className="size-5" />
       </header>
 
       <div className="flex">
@@ -114,16 +111,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="p-2 space-y-1 border-t border-border">
-            <Link
-              to="/emergency"
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm bg-emergency/10 text-emergency font-semibold hover:bg-emergency/15"
-            >
-              <AlertOctagon className="size-4" />
-              {!collapsed && <span>{t("nav.emergency")}</span>}
-            </Link>
             <button
               onClick={signOut}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
             >
               <LogOut className="size-4" />
               {!collapsed && <span>{t("auth.signout")}</span>}
@@ -167,15 +157,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                   );
                 })}
               </nav>
-              <Link
-                to="/emergency"
-                className="flex items-center gap-3 px-3 py-3 rounded-md bg-emergency text-emergency-foreground font-semibold"
-              >
-                <AlertOctagon className="size-4" /> {t("nav.emergency")}
-              </Link>
               <button
                 onClick={signOut}
-                className="mt-2 flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent"
+                className="mt-2 flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent cursor-pointer"
               >
                 <LogOut className="size-4" /> {t("auth.signout")}
               </button>
