@@ -1,83 +1,143 @@
 """
-TraumaGuard AI - PostgreSQL Database Quick Viewer Script
-Run this script anytime to inspect PostgreSQL database tables directly in your terminal.
+TraumaGuard AI - Database & Customer Records Table Viewer
+Inspect full customer profiles, login metrics, timestamps, and activity in clean rows & columns.
+
 Usage:
-    python view_db.py                  (Shows summary of all PostgreSQL tables)
-    python view_db.py mood_logs        (Shows records from mood_logs)
-    python view_db.py doctors          (Shows all doctors)
-    python view_db.py chat_messages     (Shows recent chat history)
-    python view_db.py emergency_facilities (Shows 24/7 crisis centers)
+    python view_db.py               (Prints full Customers dossier table)
+    python view_db.py users         (Full customer table with login counts & stats)
+    python view_db.py logins        (Audit log of individual user login sessions)
+    python view_db.py mood_logs     (Recent patient mood check-in records)
+    python view_db.py doctors       (Clinical specialists directory)
+    python view_db.py appointments  (Consultation bookings)
+    python view_db.py chat_messages (AI clinical chat messages)
 """
 import sys
 import os
+
+# Ensure safe UTF-8 output on Windows PowerShell
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
 import database
 
-def print_divider(title=""):
-    print("\n" + "=" * 70)
-    if title:
-        print(f"  {title}")
-        print("=" * 70)
+
+def print_customers_table():
+    users = database.get_users()
+    print("\n" + "=" * 140)
+    print(" [*] TRAUMAGUARD AI -- CUSTOMER MASTER RECORDS & LOGIN METRICS TABLE")
+    print("=" * 140)
+    
+    headers = [
+        ("USER ID", 15),
+        ("FULL NAME", 22),
+        ("EMAIL ADDRESS", 26),
+        ("PHONE", 14),
+        ("LOGINS", 8),
+        ("LAST LOGIN TIME", 20),
+        ("CHECK-INS", 10),
+        ("AVG DISTRESS", 13),
+        ("STATUS", 10),
+        ("CREATED DATE", 20)
+    ]
+    
+    header_str = " | ".join([f"{h[0]:<{h[1]}}" for h in headers])
+    print(header_str)
+    print("-" * 140)
+    
+    if not users:
+        print("  No customer records found.")
+    else:
+        for u in users:
+            uid = str(u.get('id', ''))[:13] + ".." if len(str(u.get('id', ''))) > 15 else str(u.get('id', ''))
+            name = str(u.get('full_name', ''))[:20]
+            email = str(u.get('email', ''))[:24]
+            phone = str(u.get('phone', 'N/A'))[:12]
+            logins = str(u.get('login_count', 1))
+            last_login = str(u.get('last_login_at', 'Never'))[:19]
+            checkins = str(u.get('total_checkins', 0))
+            avg_distress = f"{u.get('avg_distress', 0.0)}%"
+            status = str(u.get('status', 'Active'))
+            created = str(u.get('created_at', ''))[:19]
+            
+            row = [
+                f"{uid:<15}",
+                f"{name:<22}",
+                f"{email:<26}",
+                f"{phone:<14}",
+                f"{logins:<8}",
+                f"{last_login:<20}",
+                f"{checkins:<10}",
+                f"{avg_distress:<13}",
+                f"{status:<10}",
+                f"{created:<20}"
+            ]
+            print(" | ".join(row))
+            
+    print("-" * 140)
+    print(f" Total Registered Customers: {len(users)}")
+    print("=" * 140 + "\n")
+
+
+def print_logins_table():
+    logins = database.get_user_logins(limit=30)
+    print("\n" + "=" * 105)
+    print(" [*] USER LOGIN SESSIONS AUDIT LOG")
+    print("=" * 105)
+    headers = [("SESSION ID", 12), ("USER ID", 15), ("EMAIL", 28), ("IP ADDRESS", 16), ("LOGGED AT", 20)]
+    print(" | ".join([f"{h[0]:<{h[1]}}" for h in headers]))
+    print("-" * 105)
+    for l in logins:
+        sid = f"#{l.get('id')}"
+        uid = str(l.get('user_id', ''))[:13]
+        email = str(l.get('email', ''))[:26]
+        ip = str(l.get('ip_address', '127.0.0.1'))
+        logged = str(l.get('logged_at', ''))[:19]
+        print(f"{sid:<12} | {uid:<15} | {email:<28} | {ip:<16} | {logged:<20}")
+    print("-" * 105)
+    print(f" Total Logins Shown: {len(logins)}\n")
+
+
+def print_generic_table(table_name):
+    with database.get_db_cursor() as cur:
+        cur.execute(f'SELECT * FROM "{table_name}" ORDER BY 1 DESC LIMIT 25')
+        rows = cur.fetchall()
+        print(f"\n" + "=" * 90)
+        print(f" [*] TABLE: {table_name.upper()}")
+        print("=" * 90)
+        if not rows:
+            print(f"  No records found in table '{table_name}'.")
+            return
+        columns = list(rows[0].keys())
+        print(" | ".join([f"{c.upper()[:20]:<20}" for c in columns]))
+        print("-" * 90)
+        for r in rows:
+            vals = []
+            for c in columns:
+                v = str(r[c]).replace("\n", " ") if r[c] is not None else "NULL"
+                if len(v) > 18:
+                    v = v[:16] + ".."
+                vals.append(f"{v:<20}")
+            print(" | ".join(vals))
+        print("-" * 90)
+        print(f" Total Rows: {len(rows)}\n")
+
 
 def main():
     try:
         database.init_db()
     except Exception as e:
-        print(f"Database connection error: {e}")
+        print(f"Database error: {e}")
         return
 
-    with database.get_db_cursor() as cur:
-        # Get all public tables in PostgreSQL
-        cur.execute("""
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            ORDER BY table_name;
-        """)
-        tables = [row['table_name'] for row in cur.fetchall()]
+    arg = sys.argv[1].lower() if len(sys.argv) > 1 else "users"
 
-        arg = sys.argv[1] if len(sys.argv) > 1 else None
+    if arg in ["users", "customers", "all"]:
+        print_customers_table()
+    elif arg in ["logins", "sessions", "history"]:
+        print_logins_table()
+    else:
+        print_generic_table(arg)
 
-        if not arg or arg not in tables:
-            print_divider("TRAUMAGUARD AI - POSTGRESQL DATABASE OVERVIEW (traumaguard_db)")
-            print(f"Host:     {database.POSTGRES_HOST}:{database.POSTGRES_PORT}")
-            print(f"Database: {database.POSTGRES_DB}")
-            print(f"User:     {database.POSTGRES_USER}\n")
-            print(f"{'TABLE NAME':<25} | {'RECORD COUNT':<15} | {'VIEW COMMAND'}")
-            print("-" * 70)
-            for t in tables:
-                cur.execute(f'SELECT COUNT(*) as cnt FROM "{t}"')
-                cnt = cur.fetchone()['cnt']
-                print(f"{t:<25} | {cnt:<15} | python view_db.py {t}")
-            print("-" * 70)
-            print("\nTIP: Run 'python view_db.py <table_name>' to view rows in that table.")
-            return
-
-        # Display specific table rows
-        table_name = arg
-        print_divider(f"TABLE: {table_name.upper()}")
-        cur.execute(f'SELECT * FROM "{table_name}" ORDER BY 1 DESC LIMIT 20')
-        rows = cur.fetchall()
-
-        if not rows:
-            print(f"No records found in table '{table_name}'.")
-            return
-
-        columns = list(rows[0].keys())
-        print(" | ".join([f"{col.upper()}" for col in columns]))
-        print("-" * 70)
-
-        for r in rows:
-            row_dict = dict(r)
-            values = []
-            for col in columns:
-                val = str(row_dict[col]) if row_dict[col] is not None else "NULL"
-                val = val.replace("\n", " ")
-                if len(val) > 35:
-                    val = val[:32] + "..."
-                values.append(val)
-            print(" | ".join(values))
-
-        print(f"\nTotal rows shown: {len(rows)}")
 
 if __name__ == "__main__":
     main()

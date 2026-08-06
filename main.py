@@ -47,13 +47,6 @@ class MoodLogCreate(BaseModel):
     mood: str
     note: Optional[str] = ""
 
-class EmergencyDispatchRequest(BaseModel):
-    latitude: Optional[float] = 17.385
-    longitude: Optional[float] = 78.486
-    contact_phone: Optional[str] = "+91 98765 43210"
-    patient_name: Optional[str] = "Lagu (Trauma Recovery)"
-    distress_level: Optional[int] = 90
-
 class DoctorBookingRequest(BaseModel):
     doctor_id: str
     doctor_name: str
@@ -67,20 +60,12 @@ class UserSyncRequest(BaseModel):
     email: str
     full_name: str
     phone: Optional[str] = None
-    emergency_contact: Optional[str] = None
-
-class ContactCreateRequest(BaseModel):
-    user_id: Optional[str] = "usr_default"
-    name: str
-    phone: str
-    relationship: Optional[str] = "Guardian"
-    is_primary: Optional[bool] = True
 
 class NotificationCreateRequest(BaseModel):
     user_id: Optional[str] = "usr_default"
     title: str
     message: str
-    type: Optional[str] = "ALERT"
+    type: Optional[str] = "REMINDER"
 
 class ChatMessageRequest(BaseModel):
     message: Optional[str] = None
@@ -121,46 +106,6 @@ async def create_mood_log(req: MoodLogCreate):
         raise HTTPException(status_code=400, detail="Risk score must be between 0 and 100")
     log = database.add_mood_log(req.risk_score, req.mood, req.note or "")
     return {"success": True, "log": log, "message": "Mood check-in recorded into SQLite database."}
-
-
-# ----------------- Emergency SOS & Dispatch API (SQLite) -----------------
-
-@app.post("/api/emergency/dispatch")
-@app.post("/api/emergency/dispatch/")
-async def emergency_dispatch(req: EmergencyDispatchRequest):
-    lat = req.latitude or 17.385
-    lng = req.longitude or 78.486
-    maps_url = f"https://maps.google.com/?q={lat},{lng}"
-    dispatch_id = f"SOS-{uuid.uuid4().hex[:8].upper()}"
-    patient_name = req.patient_name or "TraumaGuard User"
-    phone = req.contact_phone or "+91 98765 43210"
-
-    database.record_emergency_dispatch(
-        dispatch_id=dispatch_id,
-        patient_name=patient_name,
-        contact_phone=phone,
-        latitude=lat,
-        longitude=lng,
-        distress_level=req.distress_level or 90,
-        maps_url=maps_url
-    )
-
-    return {
-        "status": "dispatched",
-        "dispatch_id": dispatch_id,
-        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "patient_name": patient_name,
-        "contact_phone": phone,
-        "maps_url": maps_url,
-        "sms_status": "sent",
-        "message": "Emergency SOS broadcasted successfully to your care network and crisis dispatchers."
-    }
-
-@app.get("/api/emergency/nearby")
-@app.get("/api/emergency/nearby/")
-async def get_nearby_facilities():
-    facilities = database.get_facilities()
-    return {"facilities": facilities, "count": len(facilities)}
 
 
 # ----------------- Clinical ReportLab PDF Generator -----------------
@@ -534,19 +479,24 @@ async def chat_history():
     return {"messages": history}
 
 
-# ----------------- User Management & PostgreSQL Sync API -----------------
+# ----------------- User Management & Login Tracking API -----------------
 
 @app.post("/api/users/sync")
 @app.post("/api/users/sync/")
 @app.post("/api/users/register")
 @app.post("/api/users/register/")
-async def sync_user(req: UserSyncRequest):
+@app.post("/api/auth/login")
+async def sync_user(req: UserSyncRequest, request: Request):
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    user_agent = request.headers.get("user-agent", "Web Browser")
     user = database.save_user(
         email=req.email,
         full_name=req.full_name,
         phone=req.phone,
-        emergency_contact=req.emergency_contact,
-        user_id=req.id
+        user_id=req.id,
+        is_login=True,
+        ip_address=client_ip,
+        user_agent=user_agent
     )
     return {"status": "success", "user": user}
 
@@ -554,30 +504,17 @@ async def sync_user(req: UserSyncRequest):
 @app.get("/api/users")
 @app.get("/api/users/")
 async def list_users():
+    """Returns complete table of customer details including login counts, last login, and check-in counts."""
     users = database.get_users()
     return {"users": users, "count": len(users)}
 
 
-# ----------------- Emergency Contacts Module API -----------------
-
-@app.post("/api/contacts")
-@app.post("/api/contacts/")
-async def add_contact(req: ContactCreateRequest):
-    contact = database.add_emergency_contact(
-        user_id=req.user_id or "usr_default",
-        name=req.name,
-        phone=req.phone,
-        relationship=req.relationship or "Guardian",
-        is_primary=bool(req.is_primary)
-    )
-    return {"status": "success", "contact": contact}
-
-
-@app.get("/api/contacts")
-@app.get("/api/contacts/")
-async def list_contacts(user_id: Optional[str] = None):
-    contacts = database.get_emergency_contacts(user_id=user_id)
-    return {"contacts": contacts, "count": len(contacts)}
+@app.get("/api/users/logins")
+@app.get("/api/users/logins/")
+async def list_user_logins(limit: int = 50):
+    """Returns audit log of user login sessions and timestamps."""
+    logins = database.get_user_logins(limit=limit)
+    return {"logins": logins, "count": len(logins)}
 
 
 # ----------------- Notifications & Patient Alerts Module API -----------------

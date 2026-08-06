@@ -95,22 +95,55 @@ def get_db_cursor(commit=False):
 
 
 def init_db():
-    """Initializes all 7 PostgreSQL tables and populates baseline records."""
+    """Initializes all PostgreSQL tables without emergency mode and populates baseline records."""
     ensure_database_exists()
     with get_db_cursor(commit=True) as cur:
-        # 1. Users Table
+        # Drop legacy emergency tables if they exist
+        cur.execute("""
+            DROP TABLE IF EXISTS emergency_dispatches CASCADE;
+            DROP TABLE IF EXISTS emergency_facilities CASCADE;
+            DROP TABLE IF EXISTS emergency_contacts CASCADE;
+        """)
+
+        # 1. Users Table with Login Tracking & Customer Metrics
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(100) PRIMARY KEY,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 full_name VARCHAR(255) NOT NULL,
                 phone VARCHAR(50),
-                emergency_contact VARCHAR(255),
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                login_count INTEGER DEFAULT 1,
+                last_login_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                status VARCHAR(50) DEFAULT 'Active',
+                role VARCHAR(50) DEFAULT 'Patient',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         """)
 
-        # 2. Mood Logs Table
+        # Safely migrate existing users table schema if columns are missing
+        cur.execute("""
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER DEFAULT 1;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'Patient';
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+            ALTER TABLE users DROP COLUMN IF EXISTS emergency_contact;
+        """)
+
+        # 2. User Login Session History Table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS user_logins (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(100) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                ip_address VARCHAR(100),
+                user_agent TEXT,
+                logged_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+
+        # 3. Mood Logs Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS mood_logs (
                 id SERIAL PRIMARY KEY,
@@ -122,7 +155,7 @@ def init_db():
             );
         """)
 
-        # 3. Doctors Table
+        # 4. Doctors Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS doctors (
                 id VARCHAR(50) PRIMARY KEY,
@@ -140,7 +173,7 @@ def init_db():
             );
         """)
 
-        # 4. Appointments Table
+        # 5. Appointments Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS appointments (
                 id SERIAL PRIMARY KEY,
@@ -156,37 +189,7 @@ def init_db():
             );
         """)
 
-        # 5. Emergency Dispatches Table
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS emergency_dispatches (
-                id SERIAL PRIMARY KEY,
-                incident_code VARCHAR(50) UNIQUE NOT NULL,
-                patient_name VARCHAR(255) NOT NULL,
-                contact_phone VARCHAR(50) NOT NULL,
-                latitude DOUBLE PRECISION,
-                longitude DOUBLE PRECISION,
-                maps_url TEXT,
-                distress_level INTEGER DEFAULT 95,
-                status VARCHAR(100) DEFAULT 'ACTIVE_DISPATCHED',
-                dispatched_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
-
-        # 6. Emergency Facilities Table
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS emergency_facilities (
-                id VARCHAR(50) PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                city VARCHAR(100) NOT NULL,
-                phone VARCHAR(50) NOT NULL,
-                hotline VARCHAR(50) NOT NULL,
-                address TEXT NOT NULL,
-                type VARCHAR(100) NOT NULL,
-                distance VARCHAR(50) NOT NULL
-            );
-        """)
-
-        # 7. Chat Threads Module
+        # 6. Chat Threads Module
         cur.execute("""
             CREATE TABLE IF NOT EXISTS chat_threads (
                 id VARCHAR(100) PRIMARY KEY,
@@ -197,7 +200,7 @@ def init_db():
             );
         """)
 
-        # 8. Chat Messages Module
+        # 7. Chat Messages Module
         cur.execute("""
             CREATE TABLE IF NOT EXISTS chat_messages (
                 id SERIAL PRIMARY KEY,
@@ -212,20 +215,7 @@ def init_db():
             );
         """)
 
-        # 9. Emergency Contacts Module (Trusted Care Circle)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS emergency_contacts (
-                id SERIAL PRIMARY KEY,
-                user_id VARCHAR(100) DEFAULT 'usr_default',
-                name VARCHAR(255) NOT NULL,
-                relationship VARCHAR(100),
-                phone VARCHAR(50) NOT NULL,
-                is_primary BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
-
-        # 10. Clinical Reports & Trajectory Module
+        # 8. Clinical Reports & Trajectory Module
         cur.execute("""
             CREATE TABLE IF NOT EXISTS clinical_reports (
                 id SERIAL PRIMARY KEY,
@@ -240,14 +230,14 @@ def init_db():
             );
         """)
 
-        # 11. Patient Notifications & Alerts Module
+        # 9. Patient Notifications & Alerts Module
         cur.execute("""
             CREATE TABLE IF NOT EXISTS notifications (
                 id SERIAL PRIMARY KEY,
                 user_id VARCHAR(100) DEFAULT 'usr_default',
                 title VARCHAR(255) NOT NULL,
                 message TEXT NOT NULL,
-                type VARCHAR(50) DEFAULT 'ALERT',
+                type VARCHAR(50) DEFAULT 'REMINDER',
                 is_read BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
@@ -257,9 +247,9 @@ def init_db():
         cur.execute("SELECT COUNT(*) as cnt FROM users;")
         if cur.fetchone()['cnt'] == 0:
             cur.execute("""
-                INSERT INTO users (id, email, full_name, phone, emergency_contact)
-                VALUES (%s, %s, %s, %s, %s);
-            """, ('usr_default', 'patient@traumaguard.ai', 'Trauma Recovery Patient', '+91 98765 43210', '+91 98765 00000 (Dr. Relative)'))
+                INSERT INTO users (id, email, full_name, phone, login_count, last_login_at, status, role)
+                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s, %s);
+            """, ('usr_default', 'patient@traumaguard.ai', 'Trauma Recovery Patient', '+91 98765 43210', 1, 'Active', 'Patient'))
 
         # Check and Seed Doctors
         cur.execute("SELECT COUNT(*) as cnt FROM doctors;")
@@ -277,22 +267,6 @@ def init_db():
                     INSERT INTO doctors (id, name, specialty, category, languages, city, phone, email, bio, years_experience, rating, available)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """, doc)
-
-        # Check and Seed Emergency Facilities
-        cur.execute("SELECT COUNT(*) as cnt FROM emergency_facilities;")
-        if cur.fetchone()['cnt'] == 0:
-            facilities = [
-                ('fac-1', 'NIMHANS Emergency Trauma & Crisis Centre', 'Bengaluru', '080-26995000', '14416', 'Hosur Road, Bengaluru, Karnataka 560029', 'Psychiatric Emergency Hospital', '2.4 km'),
-                ('fac-2', 'AIIMS Department of Psychiatry Crisis Bay', 'New Delhi', '011-26588500', '14416', 'Ansari Nagar, New Delhi 110029', 'Apex Trauma Center', '3.8 km'),
-                ('fac-3', 'KEM Hospital Acute Psychiatric & Trauma Ward', 'Mumbai', '022-24107000', '112', 'Acharya Donde Marg, Parel, Mumbai 400012', 'Public Emergency Care', '1.9 km'),
-                ('fac-4', 'Institute of Mental Health (IMH) Crisis Unit', 'Chennai', '044-26441544', '104', 'Medavakkam Tank Road, Kilpauk, Chennai 600010', 'Specialized Care', '4.1 km'),
-                ('fac-5', 'Apollo Emergency Trauma & Neuro Care Bay', 'Hyderabad', '040-23607777', '1066', 'Jubilee Hills, Road No 72, Hyderabad 500033', '24/7 Advanced Care', '5.0 km')
-            ]
-            for fac in facilities:
-                cur.execute("""
-                    INSERT INTO emergency_facilities (id, name, city, phone, hotline, address, type, distance)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-                """, fac)
 
         # Note: Mood logs start clean and are only recorded when actual check-ins are logged.
     print(f"[PostgreSQL] TraumaGuard AI database ({POSTGRES_DB}) initialized and verified successfully.")
@@ -409,82 +383,121 @@ def get_chat_history(limit: int = 20) -> List[Dict[str, Any]]:
 # Method aliases for compatibility
 get_mood_logs = get_recent_mood_logs
 add_mood_log = save_mood_log
-get_facilities = get_emergency_facilities
 
 
-def record_emergency_dispatch(dispatch_id: str, patient_name: str, contact_phone: str, latitude: float, longitude: float, distress_level: int = 90, maps_url: str = None) -> Dict[str, Any]:
+def record_user_login(user_id: str, email: str, ip_address: Optional[str] = None, user_agent: Optional[str] = None) -> Dict[str, Any]:
+    """Records an individual login event and updates user login statistics."""
     with get_db_cursor(commit=True) as cur:
+        # Insert audit login record
         cur.execute("""
-            INSERT INTO emergency_dispatches (incident_code, patient_name, contact_phone, latitude, longitude, maps_url, distress_level, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'ACTIVE_DISPATCHED')
-            RETURNING id, incident_code, patient_name, contact_phone, latitude, longitude, maps_url, distress_level, status, dispatched_at;
-        """, (dispatch_id, patient_name, contact_phone, latitude, longitude, maps_url, distress_level))
-        row = cur.fetchone()
-        if row and isinstance(row.get('dispatched_at'), datetime.datetime):
-            row['dispatched_at'] = row['dispatched_at'].strftime("%Y-%m-%d %H:%M:%S")
-        return dict(row) if row else {"incident_code": dispatch_id, "status": "ACTIVE_DISPATCHED"}
+            INSERT INTO user_logins (user_id, email, ip_address, user_agent, logged_at)
+            VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+            RETURNING id, user_id, email, ip_address, logged_at;
+        """, (user_id, email, ip_address or "127.0.0.1", user_agent or "Web Client"))
+        login_row = cur.fetchone()
+
+        # Increment login_count and update last_login_at in users table
+        cur.execute("""
+            UPDATE users
+            SET login_count = COALESCE(login_count, 0) + 1,
+                last_login_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s OR email = %s;
+        """, (user_id, email))
+        return dict(login_row) if login_row else {}
 
 
-def save_user(email: str, full_name: str, phone: Optional[str] = None, emergency_contact: Optional[str] = None, user_id: Optional[str] = None) -> Dict[str, Any]:
+def save_user(email: str, full_name: str, phone: Optional[str] = None, user_id: Optional[str] = None, is_login: bool = True, ip_address: Optional[str] = None, user_agent: Optional[str] = None) -> Dict[str, Any]:
+    """Saves or updates a user profile, tracking login occurrences and timestamps."""
     uid = user_id or f"usr_{uuid.uuid4().hex[:8]}"
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            INSERT INTO users (id, email, full_name, phone, emergency_contact)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO users (id, email, full_name, phone, login_count, last_login_at, status, role, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, 1, CURRENT_TIMESTAMP, 'Active', 'Patient', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             ON CONFLICT (email) DO UPDATE SET
                 full_name = EXCLUDED.full_name,
-                phone = COALESCE(EXCLUDED.phone, users.phone),
-                emergency_contact = COALESCE(EXCLUDED.emergency_contact, users.emergency_contact)
-            RETURNING id, email, full_name, phone, emergency_contact, created_at;
-        """, (uid, email, full_name, phone, emergency_contact))
+                phone = COALESCE(NULLIF(EXCLUDED.phone, ''), users.phone),
+                login_count = CASE WHEN %s THEN COALESCE(users.login_count, 0) + 1 ELSE users.login_count END,
+                last_login_at = CASE WHEN %s THEN CURRENT_TIMESTAMP ELSE users.last_login_at END,
+                updated_at = CURRENT_TIMESTAMP
+            RETURNING id, email, full_name, phone, login_count, last_login_at, status, role, created_at, updated_at;
+        """, (uid, email, full_name, phone, is_login, is_login))
         row = cur.fetchone()
-        if row and isinstance(row.get('created_at'), datetime.datetime):
-            row['created_at'] = row['created_at'].strftime("%Y-%m-%d %H:%M:%S")
-        return dict(row) if row else {"id": uid, "email": email, "full_name": full_name}
+
+        if row:
+            d = dict(row)
+            # Record login session event
+            if is_login:
+                try:
+                    cur.execute("""
+                        INSERT INTO user_logins (user_id, email, ip_address, user_agent, logged_at)
+                        VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP);
+                    """, (d['id'], d['email'], ip_address or "127.0.0.1", user_agent or "Web Client"))
+                except Exception:
+                    pass
+
+            for dt_col in ['created_at', 'updated_at', 'last_login_at']:
+                if isinstance(d.get(dt_col), datetime.datetime):
+                    d[dt_col] = d[dt_col].strftime("%Y-%m-%d %H:%M:%S")
+            return d
+        return {"id": uid, "email": email, "full_name": full_name}
 
 
 def get_users() -> List[Dict[str, Any]]:
+    """Returns comprehensive customer details with full login counts, activity, and clinical aggregates."""
     with get_db_cursor() as cur:
-        cur.execute("SELECT id, email, full_name, phone, emergency_contact, created_at FROM users ORDER BY created_at DESC;")
-        rows = cur.fetchall()
-        result = []
-        for r in rows:
-            d = dict(r)
-            if isinstance(d.get('created_at'), datetime.datetime):
-                d['created_at'] = d['created_at'].strftime("%Y-%m-%d %H:%M:%S")
-            result.append(d)
-        return result
-
-
-# ----------------- Emergency Contacts Module -----------------
-
-def add_emergency_contact(user_id: str, name: str, phone: str, relationship: Optional[str] = "Guardian", is_primary: bool = True) -> Dict[str, Any]:
-    with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            INSERT INTO emergency_contacts (user_id, name, relationship, phone, is_primary)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING id, user_id, name, relationship, phone, is_primary, created_at;
-        """, (user_id, name, relationship, phone, is_primary))
-        row = cur.fetchone()
-        if row and isinstance(row.get('created_at'), datetime.datetime):
-            row['created_at'] = row['created_at'].strftime("%Y-%m-%d %H:%M:%S")
-        return dict(row) if row else {}
-
-
-def get_emergency_contacts(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
-    with get_db_cursor() as cur:
-        if user_id:
-            cur.execute("SELECT * FROM emergency_contacts WHERE user_id = %s ORDER BY is_primary DESC, id ASC;", (user_id,))
-        else:
-            cur.execute("SELECT * FROM emergency_contacts ORDER BY is_primary DESC, id ASC;")
+            SELECT 
+                u.id,
+                u.full_name,
+                u.email,
+                COALESCE(u.phone, 'N/A') as phone,
+                COALESCE(u.login_count, 1) as login_count,
+                u.last_login_at,
+                u.status,
+                u.role,
+                u.created_at,
+                COUNT(DISTINCT m.id) as total_checkins,
+                COALESCE(ROUND(AVG(m.risk_score), 1), 0.0) as avg_distress,
+                COUNT(DISTINCT a.id) as total_appointments
+            FROM users u
+            LEFT JOIN mood_logs m ON (m.user_id = u.id OR (u.id = 'usr_default' AND m.user_id = 'usr_default'))
+            LEFT JOIN appointments a ON (a.patient_name ILIKE '%' || u.full_name || '%' OR a.patient_phone = u.phone)
+            GROUP BY u.id, u.full_name, u.email, u.phone, u.login_count, u.last_login_at, u.status, u.role, u.created_at
+            ORDER BY u.created_at DESC;
+        """)
         rows = cur.fetchall()
         result = []
         for r in rows:
             d = dict(r)
-            if isinstance(d.get('created_at'), datetime.datetime):
-                d['created_at'] = d['created_at'].strftime("%Y-%m-%d %H:%M:%S")
+            for dt_col in ['created_at', 'last_login_at']:
+                if isinstance(d.get(dt_col), datetime.datetime):
+                    d[dt_col] = d[dt_col].strftime("%Y-%m-%d %H:%M:%S")
+                elif d.get(dt_col) is None:
+                    d[dt_col] = "Never"
+            d['avg_distress'] = float(d['avg_distress'])
             result.append(d)
         return result
+
+
+def get_user_logins(limit: int = 50) -> List[Dict[str, Any]]:
+    """Returns granular login history audit logs."""
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT id, user_id, email, ip_address, user_agent, logged_at
+            FROM user_logins
+            ORDER BY logged_at DESC
+            LIMIT %s;
+        """, (limit,))
+        rows = cur.fetchall()
+        result = []
+        for r in rows:
+            d = dict(r)
+            if isinstance(d.get('logged_at'), datetime.datetime):
+                d['logged_at'] = d['logged_at'].strftime("%Y-%m-%d %H:%M:%S")
+            result.append(d)
+        return result
+
 
 
 # ----------------- Clinical Reports Module -----------------
