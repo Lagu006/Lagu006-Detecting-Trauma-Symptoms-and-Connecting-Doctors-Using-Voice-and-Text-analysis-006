@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraumaGuard AI — Clinical Trauma & Mental Health Stabilization</title>
+  <meta name="description" content="AI-powered trauma recovery, acute distress tracking, emergency SOS, and psychiatric clinician directory.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- ================= HEADER & NAVIGATION ================= -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-text">
+          <h1>TraumaGuard AI</h1>
+          <span>FastAPI + SQLite Core</span>
+        </div>
+      </a>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" data-view="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-view="reports">📄 Clinical Reports</button>
+        <button class="tab-btn" data-view="doctors">🩺 Specialists</button>
+        <button class="tab-btn" data-view="chat">💬 AI Chat</button>
+      </nav>
+
+      <div class="status-badge">
+        <div class="pulse-dot"></div>
+        <span>FastAPI Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN APP VIEWS ================= -->
+  <main class="app-content">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view-section active">
+      <div class="page-header">
+        <div>
+          <h2>Patient Distress & Stability Dashboard</h2>
+          <p>Real-time longitudinal telemetry and daily somatic check-in.</p>
+        </div>
+        <button onclick="downloadClinicalPdf()" class="btn-primary" id="download-pdf-btn">
+          📥 Download Doctor PDF (ReportLab)
+        </button>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid-3">
+        <div class="glass-card stat-card">
+          <span class="stat-label">Average Distress Index</span>
+          <div class="stat-value" id="stat-avg-distress">35 <small>/100</small></div>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Total SQLite Records</span>
+          <div class="stat-value" id="stat-total-logs">6 <small>entries</small></div>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Care Network Status</span>
+          <div class="stat-value" style="color:var(--emerald);">Active <small>GPS Ready</small></div>
+        </div>
+      </div>
+
+      <!-- Quick Mood Check-in Box -->
+      <div class="checkin-box">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;margin-bottom:0.25rem;">
+          ⚡ Quick Mood & Somatic Check-in
+        </h3>
+        <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">
+          Rate your distress level and record any recent flashback triggers directly into the SQLite database.
+        </p>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span style="font-weight:600;font-size:0.9rem;">Distress Level Rating</span>
+            <span class="distress-number" id="distress-val-display">35 / 100</span>
+          </div>
+          <input type="range" id="distress-slider" min="0" max="100" value="35" oninput="updateDistressValue(this.value)">
+        </div>
+
+        <div class="mood-tags-row">
+          <button type="button" class="mood-tag-btn active" onclick="setMoodTag('Calm', this)">🌿 Calm</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Anxious', this)">⚡ Anxious</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Restless', this)">🌊 Restless</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Panic', this)">🔥 Panic</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Overwhelmed', this)">💥 Overwhelmed</button>
+          <button type="button" class="mood-tag-btn" onclick="setMoodTag('Optimistic', this)">✨ Optimistic</button>
+        </div>
+
+        <input type="text" id="mood-note-input" class="custom-input" placeholder="Notes (e.g., sound triggers, chest tightness, sleep quality, grounding effect)...">
+
+        <button onclick="submitMoodCheckin(event)" class="btn-primary">
+          💾 Record Check-in to SQLite
+        </button>
+      </div>
+
+      <!-- Distress Trend & Recent Logs -->
+      <div class="grid-2">
+        <div class="glass-card">
+          <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:1rem;">
+            📈 14-Day Distress Trend
+          </h3>
+          <div id="chart-bars-container" style="display:flex;align-items:flex-end;gap:0.5rem;height:200px;padding-top:1rem;border-bottom:1px solid var(--border-color);">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:1rem;">
+            🕒 Recent SQLite Check-ins
+          </h3>
+          <div id="recent-logs-list">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 2. CLINICAL REPORTS & COMPARATIVE VAULT VIEW -->
+    <section id="view-reports" class="view-section">
+      <div class="page-header">
+        <div>
+          <div style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.2rem 0.6rem;background:rgba(2,132,199,0.1);color:var(--primary);border:1px solid rgba(2,132,199,0.2);border-radius:var(--radius-full);font-size:0.75rem;font-weight:700;margin-bottom:0.5rem;">
+            Evidence-Based Comparison v2.1 • Confidential Dossier
+          </div>
+          <h2>📄 Clinical Reports & Comparative Vault</h2>
+          <p>Upload past psychiatric reports & photo scans to track objective recovery differences against current real-time telemetry.</p>
+        </div>
+        <div style="display:flex;gap:0.75rem;align-items:center;">
+          <button onclick="openDocUploadModal()" class="btn-secondary" style="font-size:0.85rem;padding:0.6rem 1.1rem;">
+            📁 Upload Report / Photo
+          </button>
+          <button onclick="downloadClinicalPdf()" class="btn-primary" id="reports-pdf-btn">
+            📥 Export Doctor PDF (ReportLab)
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Overview Row -->
+      <div class="grid-4" style="margin-bottom:1.5rem;">
+        <div class="glass-card stat-card" style="border-left:4px solid var(--amber);">
+          <span class="stat-label">Past Baseline Distress</span>
+          <div class="stat-value" id="comp-past-score">78 <small>/100</small></div>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;" id="comp-past-date">2025-10-12 • Intake</p>
+        </div>
+        <div class="glass-card stat-card" style="border-left:4px solid var(--primary);">
+          <span class="stat-label">Current Live Telemetry</span>
+          <div class="stat-value" style="color:var(--primary);" id="comp-present-score">35 <small>/100</small></div>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;" id="comp-total-logs">6 Live Check-ins</p>
+        </div>
+        <div class="glass-card stat-card" style="border-left:4px solid var(--emerald);">
+          <span class="stat-label">Distress Reduction</span>
+          <div class="stat-value" style="color:var(--emerald);" id="comp-improvement">55.1% <small>(-43 pts)</small></div>
+          <p style="font-size:0.75rem;color:var(--emerald);margin-top:0.3rem;font-weight:600;">Significant De-escalation</p>
+        </div>
+        <div class="glass-card stat-card" style="border-left:4px solid var(--sky);">
+          <span class="stat-label">Evidence Vault</span>
+          <div class="stat-value" id="comp-vault-count">2 <small>files/photos</small></div>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">Indexed in SQLite</p>
+        </div>
+      </div>
+
+      <!-- PAST VS PRESENT DIFFERENCE ANALYZER -->
+      <div class="glass-card" style="margin-bottom:2rem;padding:1.5rem;border:1px solid rgba(2,132,199,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;border-bottom:1px solid var(--border-color);padding-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <span style="font-size:1.5rem;">✨</span>
+            <div>
+              <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--text-primary);">
+                Past vs. Present Longitudinal Difference Analyzer
+              </h3>
+              <p style="font-size:0.8rem;color:var(--text-muted);">Comparing baseline medical records against active real-time stabilization</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);">Select Baseline:</label>
+            <select id="doc-comparison-select" onchange="onDocSelectionChange(this.value)" class="custom-input" style="padding:0.4rem 0.8rem;font-size:0.85rem;width:auto;min-width:220px;">
+              <!-- Populated by app.js -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Dual Side-by-Side Cards -->
+        <div class="grid-2" style="gap:1.25rem;margin-bottom:1.5rem;">
+          <!-- Past Baseline Card -->
+          <div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-lg);padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <span style="font-family:var(--font-mono);font-size:0.75rem;padding:0.2rem 0.6rem;background:rgba(245,158,11,0.2);color:var(--amber);border-radius:var(--radius-full);font-weight:700;">
+                ⏳ PAST BASELINE STATUS
+              </span>
+              <span id="card-past-date" style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);">Date: 2025-10-12</span>
+            </div>
+            <h4 id="card-past-filename" style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:0.2rem;">
+              Initial Intake Assessment
+            </h4>
+            <div id="card-past-category" style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.8rem;">
+              Category: Previous Psychological Assessment
+            </div>
+
+            <div style="margin-bottom:0.8rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600;margin-bottom:0.3rem;">
+                <span style="color:var(--text-secondary);">Recorded Baseline Distress:</span>
+                <span id="card-past-score-display" style="color:var(--amber);font-family:var(--font-mono);font-weight:700;">78 / 100</span>
+              </div>
+              <div style="background:var(--bg-surface);height:8px;border-radius:4px;overflow:hidden;">
+                <div id="card-past-bar" style="background:var(--amber);height:100%;width:78%;border-radius:4px;"></div>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-surface);padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border-color);font-size:0.8rem;">
+              <b style="color:var(--text-secondary);display:block;margin-bottom:0.25rem;">Historical Clinical Findings:</b>
+              <p id="card-past-summary" style="color:var(--text-secondary);line-height:1.4;">
+                Patient presented in acute sympathetic shock following high-impact trauma. Frequent flashbacks, intrusive memories, severe insomnia (&lt;3h/night), and resting tachycardia.
+              </p>
+            </div>
+          </div>
+
+          <!-- Present Live Telemetry Card -->
+          <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.3);border-radius:var(--radius-lg);padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <span style="font-family:var(--font-mono);font-size:0.75rem;padding:0.2rem 0.6rem;background:rgba(16,185,129,0.2);color:var(--emerald);border-radius:var(--radius-full);font-weight:700;">
+                🛡️ PRESENT ACTIVE STATUS
+              </span>
+              <span id="card-present-count" style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);">Active Telemetry</span>
+            </div>
+            <h4 style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:0.2rem;">
+              Real-Time Autonomic Telemetry & Recovery
+            </h4>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.8rem;">
+              Somatic Grounding & Box Breathing Active
+            </div>
+
+            <div style="margin-bottom:0.8rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600;margin-bottom:0.3rem;">
+                <span style="color:var(--text-secondary);">Current Live Distress Index:</span>
+                <span id="card-present-score-display" style="color:var(--emerald);font-family:var(--font-mono);font-weight:700;">35 / 100</span>
+              </div>
+              <div style="background:var(--bg-surface);height:8px;border-radius:4px;overflow:hidden;">
+                <div id="card-present-bar" style="background:var(--emerald);height:100%;width:35%;border-radius:4px;"></div>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-surface);padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border-color);font-size:0.8rem;">
+              <b style="color:var(--text-secondary);display:block;margin-bottom:0.25rem;">Current Clinical Telemetry:</b>
+              <p id="card-present-summary" style="color:var(--text-secondary);line-height:1.4;">
+                Autonomic profile shifted into Ventral Vagal state. Sleep duration normalized to 7.0 hours nightly; acute flashback reactivity de-escalated by 55.1%.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparative Parameters Table -->
+        <div style="overflow-x:auto;margin-bottom:1.5rem;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+          <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left;">
+            <thead>
+              <tr style="background:var(--bg-surface);color:var(--text-muted);font-family:var(--font-mono);text-transform:uppercase;border-bottom:1px solid var(--border-color);">
+                <th style="padding:0.75rem 1rem;">Clinical Parameter</th>
+                <th style="padding:0.75rem 1rem;">Past / Baseline Report</th>
+                <th style="padding:0.75rem 1rem;">Present Active Status</th>
+                <th style="padding:0.75rem 1rem;">Delta Variance</th>
+                <th style="padding:0.75rem 1rem;">Clinical Significance</th>
+              </tr>
+            </thead>
+            <tbody style="divide-y:1px solid var(--border-color);" id="comp-table-body">
+              <tr style="border-bottom:1px solid var(--border-color);">
+                <td style="padding:0.75rem 1rem;font-weight:700;color:var(--text-primary);">Distress Index</td>
+                <td style="padding:0.75rem 1rem;color:var(--amber);font-weight:600;" id="table-past-score">78 / 100</td>
+                <td style="padding:0.75rem 1rem;color:var(--emerald);font-weight:700;" id="table-present-score">35 / 100</td>
+                <td style="padding:0.75rem 1rem;font-family:var(--font-mono);font-weight:700;color:var(--emerald);" id="table-delta">-43.0 pts (55.1%)</td>
+                <td style="padding:0.75rem 1rem;"><span style="padding:0.2rem 0.5rem;background:rgba(16,185,129,0.15);color:var(--emerald);border-radius:var(--radius-full);font-size:0.7rem;font-weight:700;">Significant Improvement</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border-color);">
+                <td style="padding:0.75rem 1rem;font-weight:700;color:var(--text-primary);">Autonomic Nervous System</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-muted);">Sympathetic Hyperarousal (Fight/Flight)</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-primary);font-weight:600;">Ventral Vagal (Safe & Regulated)</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-muted);">Shift to Safety</td>
+                <td style="padding:0.75rem 1rem;"><span style="padding:0.2rem 0.5rem;background:rgba(2,132,199,0.15);color:var(--primary);border-radius:var(--radius-full);font-size:0.7rem;font-weight:700;">Stabilized Regulation</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border-color);">
+                <td style="padding:0.75rem 1rem;font-weight:700;color:var(--text-primary);">Sleep Architecture</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-muted);">Severe Insomnia (&lt;3h / Night)</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-primary);font-weight:600;">Restorative 7.0h Rhythm</td>
+                <td style="padding:0.75rem 1rem;font-family:var(--font-mono);color:var(--primary);font-weight:700;">+60% Sleep Gain</td>
+                <td style="padding:0.75rem 1rem;"><span style="padding:0.2rem 0.5rem;background:rgba(2,132,199,0.15);color:var(--primary);border-radius:var(--radius-full);font-size:0.7rem;font-weight:700;">Normalizing REM</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border-color);">
+                <td style="padding:0.75rem 1rem;font-weight:700;color:var(--text-primary);">Panic & Flashback Episodes</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-muted);">4–5 Acute Episodes / Week</td>
+                <td style="padding:0.75rem 1rem;color:var(--text-primary);font-weight:600;">0–1 Mild Transient / Month</td>
+                <td style="padding:0.75rem 1rem;font-family:var(--font-mono);color:var(--emerald);font-weight:700;">-80% Frequency</td>
+                <td style="padding:0.75rem 1rem;"><span style="padding:0.2rem 0.5rem;background:rgba(16,185,129,0.15);color:var(--emerald);border-radius:var(--radius-full);font-size:0.7rem;font-weight:700;">Marked De-escalation</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Symptom Evolution Grid -->
+        <div style="margin-bottom:1.25rem;">
+          <h4 style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;margin-bottom:0.75rem;color:var(--text-primary);">
+            🩺 Symptom Resolution & Clinical Evolution Matrix
+          </h4>
+          <div class="grid-3" style="gap:1rem;font-size:0.8rem;">
+            <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);padding:1rem;border-radius:var(--radius-md);">
+              <b style="color:var(--emerald);display:block;margin-bottom:0.5rem;">✅ Resolved Symptoms:</b>
+              <div id="comp-resolved-symptoms" style="display:flex;flex-direction:column;gap:0.4rem;">
+                <span style="background:var(--bg-surface);padding:0.3rem 0.6rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);">Acute Trauma Dissociation</span>
+                <span style="background:var(--bg-surface);padding:0.3rem 0.6rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);">Severe Nocturnal Night Terrors</span>
+              </div>
+            </div>
+            <div style="background:rgba(2,132,199,0.05);border:1px solid rgba(2,132,199,0.2);padding:1rem;border-radius:var(--radius-md);">
+              <b style="color:var(--primary);display:block;margin-bottom:0.5rem;">📈 Improving / Controlled:</b>
+              <div id="comp-improving-symptoms" style="display:flex;flex-direction:column;gap:0.4rem;">
+                <span style="background:var(--bg-surface);padding:0.3rem 0.6rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);">Resting Tachycardia (Down 75%)</span>
+                <span style="background:var(--bg-surface);padding:0.3rem 0.6rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);">Somatic Shoulder & Neck Tension</span>
+              </div>
+            </div>
+            <div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);padding:1rem;border-radius:var(--radius-md);">
+              <b style="color:var(--amber);display:block;margin-bottom:0.5rem;">⚠️ Actively Monitored:</b>
+              <div id="comp-monitored-symptoms" style="display:flex;flex-direction:column;gap:0.4rem;">
+                <span style="background:var(--bg-surface);padding:0.3rem 0.6rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);">Nighttime Sleep Latency</span>
+                <span style="background:var(--bg-surface);padding:0.3rem 0.6rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);">Sudden Loud Sound Reactivity</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Longitudinal Narrative -->
+        <div style="background:rgba(2,132,199,0.06);border:1px solid rgba(2,132,199,0.25);border-radius:var(--radius-md);padding:1rem;">
+          <div style="font-weight:700;font-size:0.85rem;color:var(--primary);margin-bottom:0.3rem;">
+            ✨ AI Clinical Longitudinal Assessment Narrative
+          </div>
+          <p id="comp-narrative-text" style="font-size:0.85rem;color:var(--text-primary);line-height:1.5;">
+            Comparative longitudinal analysis between past baseline report and current active clinical telemetry reveals a 55.1% reduction in acute trauma distress. The patient has transitioned from a severe baseline index of 78/100 to an average of 35/100.
+          </p>
+        </div>
+      </div>
+
+      <!-- MEDICAL DOCUMENTS & PHOTO VAULT LIST -->
+      <div class="glass-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div>
+            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text-primary);">
+              🗄️ Uploaded Medical Documents & Photo Scans
+            </h3>
+            <p style="font-size:0.8rem;color:var(--text-muted);">Stored records in SQLite used for longitudinal progression benchmarking.</p>
+          </div>
+          <button onclick="openDocUploadModal()" class="btn-primary" style="font-size:0.8rem;padding:0.4rem 0.8rem;">
+            ＋ Add Document
+          </button>
+        </div>
+
+        <div id="vault-documents-grid" class="grid-3" style="gap:1rem;">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 4. DOCTORS SPECIALISTS VIEW -->
+    <section id="view-doctors" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>🩺 Verified Psychiatrists & Trauma Specialists</h2>
+          <p>Consult with certified crisis psychologists, EMDR therapists, and trauma physicians across India.</p>
+        </div>
+      </div>
+
+      <div id="doctors-grid" class="grid-3">
+        <!-- Rendered by app.js from SQLite -->
+      </div>
+    </section>
+
+    <!-- 5. AI CHAT VIEW (Separate Chat Sessions & Previous History) -->
+    <section id="view-chat" class="view-section">
+      <div class="page-header" style="margin-bottom: 1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;width:100%;">
+          <div>
+            <h2>💬 Clinical Mental Health Assistant</h2>
+            <p>24/7 empathetic trauma-informed guidance, somatic grounding, and separate session history.</p>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <button onclick="createNewChatSession()" class="btn-primary" style="padding:0.5rem 1rem;font-size:0.85rem;">
+              <span>➕</span> New Session
+            </button>
+            <button id="mobile-sessions-toggle" onclick="toggleSessionsSidebar()" class="btn-secondary" style="display:none;padding:0.5rem 0.75rem;font-size:0.85rem;">
+              <span>📁</span> Sessions (<span id="mobile-sessions-count">0</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-layout-grid">
+        <!-- Sessions Sidebar (Previous Chats) -->
+        <aside class="chat-sessions-sidebar" id="chat-sessions-sidebar">
+          <div class="sessions-sidebar-header">
+            <button onclick="createNewChatSession()" class="btn-new-session">
+              <span style="font-size:1.1rem;line-height:1;font-weight:700;">＋</span>
+              <span>Start New Session</span>
+            </button>
+            <div class="sessions-list-title">
+              <span>PREVIOUS SESSIONS</span>
+              <span id="sessions-count-badge" class="badge-count">0</span>
+            </div>
+          </div>
+
+          <div id="chat-sessions-list" class="sessions-list-container">
+            <!-- Rendered dynamically by app.js -->
+            <div class="sessions-loading">Loading chat history...</div>
+          </div>
+        </aside>
+
+        <!-- Active Chat Pane -->
+        <div class="chat-container">
+          <!-- Session Header Bar -->
+          <div class="chat-header-bar">
+            <div class="chat-header-info">
+              <div class="active-session-indicator" title="Active live session"></div>
+              <div style="min-width:0;">
+                <div id="active-session-title" class="active-session-title">Trauma Support Session</div>
+                <div id="active-session-sub" class="active-session-sub">Confidential & isolated session</div>
+              </div>
+            </div>
+            <div class="chat-header-actions">
+              <button onclick="deleteCurrentSession()" title="Delete this session" class="btn-icon-danger">
+                🗑️ <span class="hide-mobile" style="font-size:0.75rem;margin-left:0.25rem;">Delete</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick prompts / topic pills -->
+          <div class="chat-quick-prompts">
+            <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);align-self:center;margin-right:0.25rem;white-space:nowrap;">Quick:</span>
+            <button class="mood-tag-btn" onclick="sendQuickPrompt('I feel intense panic and chest tightness right now.')">⚡ Panic attack</button>
+            <button class="mood-tag-btn" onclick="sendQuickPrompt('I experienced a sudden trauma flashback.')">🌊 Flashback grounding</button>
+            <button class="mood-tag-btn" onclick="sendQuickPrompt('I cannot sleep due to stress and racing thoughts.')">🌙 Sleep & insomnia</button>
+            <button class="mood-tag-btn" onclick="sendQuickPrompt('How can I book a trauma psychiatrist?')">🩺 Book specialist</button>
+          </div>
+
+          <!-- Messages Scroll Box -->
+          <div id="chat-messages-box" class="chat-messages">
+            <div class="chat-bubble assistant">
+              <div class="chat-tag">Clinical Intake • TraumaGuard AI</div>
+              <div>Hello, I am here to support your stabilization and recovery. How are you feeling right now? You can share any physical symptoms, thoughts, or distress triggers.</div>
+            </div>
+          </div>
+
+          <!-- Input Row -->
+          <div class="chat-input-row">
+            <input type="text" id="chat-message-input" placeholder="Type your message, distress triggers, or physical symptoms...">
+            <button onclick="sendChatMessage()" class="btn-primary" style="border-radius:var(--radius-full);padding:0.75rem 1.4rem;font-weight:600;white-space:nowrap;">
+              Send ➤
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= DOCUMENT & PHOTO UPLOAD MODAL ================= -->
+  <div id="doc-upload-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width:560px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--border-color);padding-bottom:0.75rem;">
+        <div>
+          <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--text-primary);">
+            📁 Upload Medical Report or Photo Scan
+          </h3>
+          <p style="font-size:0.8rem;color:var(--text-muted);">
+            Catalogue previous psychiatric evaluations or somatic telemetry into SQLite.
+          </p>
+        </div>
+        <button onclick="closeDocUploadModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.25rem;cursor:pointer;">✕</button>
+      </div>
+
+      <form id="doc-upload-form" onsubmit="submitDocUpload(event)">
+        <!-- File Dropzone -->
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;font-weight:600;">
+            Select Medical File or Photo (PDF, JPG, PNG)
+          </label>
+          <div id="doc-dropzone" onclick="document.getElementById('doc-file-input').click()" style="border:2px dashed rgba(2,132,199,0.4);background:rgba(2,132,199,0.04);border-radius:var(--radius-md);padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;">
+            <input type="file" id="doc-file-input" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none;" onchange="handleDocFileSelect(this)">
+            <div id="doc-dropzone-prompt">
+              <span style="font-size:2rem;display:block;margin-bottom:0.5rem;">📄</span>
+              <b style="color:var(--text-primary);font-size:0.9rem;display:block;">Click to choose PDF report or Photo scan</b>
+              <span style="color:var(--text-muted);font-size:0.75rem;">Accepts previous doctor notes, discharge papers, & photos</span>
+            </div>
+            <div id="doc-preview-area" style="display:none;">
+              <span style="font-size:1.5rem;display:block;margin-bottom:0.25rem;">✅</span>
+              <b id="doc-selected-filename" style="color:var(--emerald);font-size:0.85rem;display:block;"></b>
+              <img id="doc-selected-img-preview" src="" style="max-height:120px;border-radius:var(--radius-sm);margin-top:0.5rem;display:none;margin-left:auto;margin-right:auto;border:1px solid var(--border-color);">
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Selector -->
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;font-weight:600;">
+            Document Category
+          </label>
+          <select id="doc-category-input" class="custom-input">
+            <option value="Previous Psychological Assessment">Previous Psychological Assessment</option>
+            <option value="Trauma Discharge Summary">Trauma Discharge Summary</option>
+            <option value="Diagnostic Scan / Photo">Diagnostic Scan / Somatic Photo</option>
+            <option value="Prescription & Medication Record">Prescription & Medication Record</option>
+            <option value="Psychiatrist Clinical Note">Psychiatrist Clinical Note</option>
+          </select>
+        </div>
+
+        <!-- Historical Baseline Score & Date -->
+        <div class="grid-2" style="gap:1rem;margin-bottom:1rem;">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+              <label style="font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;font-weight:600;">
+                Baseline Distress Score
+              </label>
+              <span id="doc-past-score-label" style="font-size:0.8rem;font-weight:700;color:var(--amber);font-family:var(--font-mono);">75 / 100</span>
+            </div>
+            <input type="range" id="doc-distress-slider" min="0" max="100" value="75" oninput="document.getElementById('doc-past-score-label').innerText = this.value + ' / 100'" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;font-weight:600;">
+              Original Report Date
+            </label>
+            <input type="date" id="doc-date-input" class="custom-input" value="2025-10-12">
+          </div>
+        </div>
+
+        <!-- Symptoms & Notes -->
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;font-weight:600;">
+            Recorded Past Symptoms & Flashback Triggers
+          </label>
+          <input type="text" id="doc-symptoms-input" class="custom-input" placeholder="e.g. Severe nocturnal panic, collision flashbacks, resting tachycardia">
+        </div>
+
+        <div style="margin-bottom:1.25rem;">
+          <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;font-weight:600;">
+            Clinical Notes / Doctor Summary
+          </label>
+          <textarea id="doc-summary-input" rows="2" class="custom-input" placeholder="Brief diagnostic impression or baseline findings..."></textarea>
+        </div>
+
+        <div style="display:flex;gap:0.75rem;">
+          <button type="button" onclick="closeDocUploadModal()" style="flex:1;background:var(--bg-surface);border:1px solid var(--border-color);color:var(--text-secondary);padding:0.75rem;border-radius:var(--radius-md);cursor:pointer;font-weight:600;">
+            Cancel
+          </button>
+          <button type="submit" id="doc-submit-btn" class="btn-primary" style="flex:1;justify-content:center;">
+            💾 Upload & Index to SQLite
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= BOOKING MODAL POPUP ================= -->
+  <div id="booking-modal" class="modal-overlay">
+
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;">Request Consultation</h3>
+        <button onclick="closeBookingModal()" style="background:transparent;border:none;color:var(--text-muted);font-size:1.25rem;cursor:pointer;">✕</button>
+      </div>
+      <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">
+        Selected Specialist: <b id="modal-doc-name" style="color:var(--primary);">—</b>
+      </p>
+
+      <form onsubmit="submitDoctorBooking(event)">
+        <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">
+          Preferred Date & Time
+        </label>
+        <input type="datetime-local" id="booking-date-input" required class="custom-input">
+
+        <label style="display:block;font-size:0.75rem;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">
+          Symptoms / Reason for Visit
+        </label>
+        <textarea id="booking-notes-input" rows="3" class="custom-input" placeholder="Briefly describe what you'd like to address..."></textarea>
+
+        <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+          <button type="button" onclick="closeBookingModal()" style="flex:1;background:var(--bg-surface);border:1px solid var(--border-color);color:var(--text-secondary);padding:0.75rem;border-radius:var(--radius-md);cursor:pointer;">
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">
+            Confirm Booking
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Client Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
