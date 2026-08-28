@@ -9,6 +9,7 @@ type SignInOptions = {
 export const authProvider = {
   auth: {
     signInWithOAuth: async (provider: string, opts?: SignInOptions) => {
+<<<<<<< HEAD
       // Mock OAuth to bypass paused Supabase
       console.warn("Supabase is paused. Simulating Google OAuth login...");
       
@@ -31,6 +32,17 @@ export const authProvider = {
       // Force reload to dashboard
       window.location.href = "/dashboard";
       return { data: { provider: provider as any, url: "" }, error: null };
+=======
+      const result = await supabase.auth.signInWithOAuth({
+        provider: provider as any,
+        options: {
+          redirectTo: opts?.redirect_uri,
+          queryParams: opts?.extraParams,
+          scopes: opts?.scopes,
+        }
+      });
+      return result;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     },
   },
 };

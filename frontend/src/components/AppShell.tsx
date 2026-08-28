@@ -14,7 +14,10 @@ import {
   ChevronsLeft,
   LogOut,
   ChevronRight,
+<<<<<<< HEAD
   History,
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,8 +25,12 @@ import { toast } from "sonner";
 
 const NAV = [
   { to: "/dashboard", key: "nav.dashboard", icon: LayoutDashboard },
+<<<<<<< HEAD
   { to: "/chat", key: "nav.chat", icon: MessageSquare, isChat: true },
   { to: "/chat-history", key: "nav.chat_history", icon: History, isHistory: true },
+=======
+  { to: "/chat", key: "nav.chat", icon: MessageSquare },
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   { to: "/records", key: "nav.records", icon: FileText },
   { to: "/reports", key: "nav.reports", icon: ClipboardList },
   { to: "/doctors", key: "nav.doctors", icon: Stethoscope },
@@ -42,6 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     setOpen(false);
   }, [pathname]);
 
+<<<<<<< HEAD
   const isNavActive = (item: (typeof NAV)[number]) => {
     if ((item as any).isHistory) {
       return pathname === "/chat-history";
@@ -52,6 +60,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     return pathname === item.to || pathname.startsWith(item.to + "/");
   };
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   async function signOut() {
     await supabase.auth.signOut();
     toast.success("Signed out");
@@ -105,7 +115,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav className="flex-1 px-2 space-y-0.5">
             {NAV.map((item) => {
               const Icon = item.icon;
+<<<<<<< HEAD
               const active = isNavActive(item);
+=======
+              const active = pathname === item.to || pathname.startsWith(item.to + "/");
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
               return (
                 <Link
                   key={item.to}
@@ -155,7 +169,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               <nav className="space-y-0.5 flex-1">
                 {NAV.map((item) => {
                   const Icon = item.icon;
+<<<<<<< HEAD
                   const active = isNavActive(item);
+=======
+                  const active = pathname === item.to;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
                   return (
                     <Link
                       key={item.to}
@@ -180,9 +198,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
 
         <main className="flex-1 min-w-0 p-4 md:p-8 pb-24 lg:pb-8 animate-fade-up">{children}</main>
+<<<<<<< HEAD
         
 
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
       </div>
     </div>
   );

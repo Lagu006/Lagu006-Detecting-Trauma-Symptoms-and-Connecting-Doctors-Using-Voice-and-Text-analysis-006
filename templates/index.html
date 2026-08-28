@@ -121,6 +121,7 @@
     </section>
 
 
+<<<<<<< HEAD
     <!-- 2. CLINICAL REPORTS & COMPARATIVE VAULT VIEW -->
     <section id="view-reports" class="view-section">
       <div class="page-header">
@@ -362,6 +363,47 @@
     </section>
 
 
+=======
+    <!-- 2. CLINICAL REPORTS VIEW -->
+    <section id="view-reports" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>📄 Clinical Reports & Doctor Export</h2>
+          <p>Longitudinal metrics, AI stability trajectory, and official PDF summary generation.</p>
+        </div>
+        <button onclick="downloadClinicalPdf()" class="btn-primary">
+          📥 Generate Doctor PDF (ReportLab)
+        </button>
+      </div>
+
+      <!-- AI Trajectory Banner -->
+      <div class="glass-card" style="border-left:4px solid var(--primary);margin-bottom:2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:var(--primary);">
+            ✨ AI Clinical Pattern & Trajectory Analysis
+          </div>
+          <span id="insight-trajectory-badge" style="font-family:var(--font-mono);font-size:0.75rem;padding:0.25rem 0.6rem;border-radius:var(--radius-full);font-weight:700;">
+            TRAJECTORY: EVALUATING
+          </span>
+        </div>
+        <p id="insight-description" style="color:var(--text-primary);font-size:0.925rem;font-weight:500;margin-bottom:1rem;">
+          Loading clinical insights from SQLite database...
+        </p>
+
+        <div class="grid-2" style="font-size:0.85rem;">
+          <div style="background:var(--bg-surface);padding:1rem;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+            <b style="color:var(--text-secondary);display:block;margin-bottom:0.5rem;">Identified Themes:</b>
+            <div id="insight-themes-list">—</div>
+          </div>
+          <div style="background:rgba(2,132,199,0.06);padding:1rem;border-radius:var(--radius-md);border:1px solid rgba(2,132,199,0.2);">
+            <b style="color:var(--primary);display:block;margin-bottom:0.5rem;">Guidance Recommendation:</b>
+            <div id="insight-recommendation" style="color:var(--text-secondary);">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     <!-- 4. DOCTORS SPECIALISTS VIEW -->
     <section id="view-doctors" class="view-section">
       <div class="page-header">
@@ -376,6 +418,7 @@
       </div>
     </section>
 
+<<<<<<< HEAD
     <!-- 5. AI CHAT VIEW (Separate Chat Sessions & Previous History) -->
     <section id="view-chat" class="view-section">
       <div class="page-header" style="margin-bottom: 1rem;">
@@ -458,11 +501,44 @@
             </button>
           </div>
         </div>
+=======
+    <!-- 5. AI CHAT VIEW -->
+    <section id="view-chat" class="view-section">
+      <div class="page-header">
+        <div>
+          <h2>💬 Clinical Mental Health Assistant</h2>
+          <p>24/7 empathetic trauma-informed guidance, somatic grounding, and crisis triage.</p>
+        </div>
+      </div>
+
+      <!-- Quick prompts -->
+      <div style="display:flex;gap:0.5rem;overflow-x:auto;padding-bottom:0.75rem;margin-bottom:0.5rem;">
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('I feel intense panic and chest tightness right now.')">⚡ Panic attack help</button>
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('I experienced a sudden trauma flashback.')">🌊 Flashback grounding</button>
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('I cannot sleep due to stress and racing thoughts.')">🌙 Sleep & insomnia</button>
+        <button class="mood-tag-btn" onclick="sendQuickPrompt('How can I book a trauma psychiatrist?')">🩺 Book specialist</button>
+      </div>
+
+      <div class="chat-container">
+        <div id="chat-messages-box" class="chat-messages">
+          <div class="chat-bubble assistant">
+            <div class="chat-tag">Clinical Intake • TraumaGuard AI</div>
+            <div>Hello Lagu, I am here to support your stabilization and recovery. How are you feeling right now? You can share any physical symptoms, thoughts, or distress triggers.</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-message-input" placeholder="Type your message or symptom (e.g., 'feeling anxious after a loud sound')...">
+          <button onclick="sendChatMessage()" class="btn-primary" style="border-radius:var(--radius-full);">
+            Send ➤
+          </button>
+        </div>
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
       </div>
     </section>
 
   </main>
 
+<<<<<<< HEAD
   <!-- ================= DOCUMENT & PHOTO UPLOAD MODAL ================= -->
   <div id="doc-upload-modal" class="modal-overlay">
     <div class="modal-card" style="max-width:560px;">
@@ -563,6 +639,10 @@
   <!-- ================= BOOKING MODAL POPUP ================= -->
   <div id="booking-modal" class="modal-overlay">
 
+=======
+  <!-- ================= BOOKING MODAL POPUP ================= -->
+  <div id="booking-modal" class="modal-overlay">
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     <div class="modal-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
         <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;">Request Consultation</h3>

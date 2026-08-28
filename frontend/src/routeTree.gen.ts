@@ -13,9 +13,15 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+<<<<<<< HEAD
 import { Route as AuthenticatedChatHistoryRouteImport } from './routes/_authenticated/chat-history'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDoctorsRouteImport } from './routes/_authenticated/doctors'
+=======
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDoctorsRouteImport } from './routes/_authenticated/doctors'
+import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedRecordsRouteImport } from './routes/_authenticated/records'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -42,12 +48,15 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 const AuthenticatedChatHistoryRoute =
   AuthenticatedChatHistoryRouteImport.update({
     id: '/chat-history',
     path: '/chat-history',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -58,6 +67,14 @@ const AuthenticatedDoctorsRoute = AuthenticatedDoctorsRouteImport.update({
   path: '/doctors',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+<<<<<<< HEAD
+=======
+const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
+  id: '/emergency',
+  path: '/emergency',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -95,9 +112,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+<<<<<<< HEAD
   '/chat-history': typeof AuthenticatedChatHistoryRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/doctors': typeof AuthenticatedDoctorsRoute
+=======
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/doctors': typeof AuthenticatedDoctorsRoute
+  '/emergency': typeof AuthenticatedEmergencyRoute
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/records': typeof AuthenticatedRecordsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -109,9 +132,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+<<<<<<< HEAD
   '/chat-history': typeof AuthenticatedChatHistoryRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/doctors': typeof AuthenticatedDoctorsRoute
+=======
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/doctors': typeof AuthenticatedDoctorsRoute
+  '/emergency': typeof AuthenticatedEmergencyRoute
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/records': typeof AuthenticatedRecordsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -125,9 +154,15 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+<<<<<<< HEAD
   '/_authenticated/chat-history': typeof AuthenticatedChatHistoryRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/doctors': typeof AuthenticatedDoctorsRoute
+=======
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/doctors': typeof AuthenticatedDoctorsRoute
+  '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/records': typeof AuthenticatedRecordsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -141,9 +176,15 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+<<<<<<< HEAD
     | '/chat-history'
     | '/dashboard'
     | '/doctors'
+=======
+    | '/dashboard'
+    | '/doctors'
+    | '/emergency'
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     | '/notifications'
     | '/records'
     | '/reports'
@@ -155,9 +196,15 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+<<<<<<< HEAD
     | '/chat-history'
     | '/dashboard'
     | '/doctors'
+=======
+    | '/dashboard'
+    | '/doctors'
+    | '/emergency'
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     | '/notifications'
     | '/records'
     | '/reports'
@@ -170,9 +217,15 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+<<<<<<< HEAD
     | '/_authenticated/chat-history'
     | '/_authenticated/dashboard'
     | '/_authenticated/doctors'
+=======
+    | '/_authenticated/dashboard'
+    | '/_authenticated/doctors'
+    | '/_authenticated/emergency'
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     | '/_authenticated/notifications'
     | '/_authenticated/records'
     | '/_authenticated/reports'
@@ -218,6 +271,7 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
     '/_authenticated/chat-history': {
       id: '/_authenticated/chat-history'
       path: '/chat-history'
@@ -225,6 +279,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -239,6 +295,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDoctorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+<<<<<<< HEAD
+=======
+    '/_authenticated/emergency': {
+      id: '/_authenticated/emergency'
+      path: '/emergency'
+      fullPath: '/emergency'
+      preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
@@ -285,9 +351,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+<<<<<<< HEAD
   AuthenticatedChatHistoryRoute: typeof AuthenticatedChatHistoryRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDoctorsRoute: typeof AuthenticatedDoctorsRoute
+=======
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDoctorsRoute: typeof AuthenticatedDoctorsRoute
+  AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRecordsRoute: typeof AuthenticatedRecordsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -297,9 +369,15 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+<<<<<<< HEAD
   AuthenticatedChatHistoryRoute: AuthenticatedChatHistoryRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDoctorsRoute: AuthenticatedDoctorsRoute,
+=======
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDoctorsRoute: AuthenticatedDoctorsRoute,
+  AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRecordsRoute: AuthenticatedRecordsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,

@@ -2,12 +2,19 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+<<<<<<< HEAD
 from dotenv import load_dotenv
 
 def main():
     """Run administrative tasks."""
     dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
     load_dotenv(dotenv_path)
+=======
+
+
+def main():
+    """Run administrative tasks."""
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'traumaguard_backend.settings')
     try:
         from django.core.management import execute_from_command_line

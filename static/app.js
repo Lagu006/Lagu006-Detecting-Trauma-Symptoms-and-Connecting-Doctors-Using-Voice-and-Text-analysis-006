@@ -9,15 +9,21 @@ let currentCoords = { lat: 17.385, lng: 78.486 };
 let selectedDoctor = null;
 let breathingInterval = null;
 
+<<<<<<< HEAD
 let selectedComparisonDocId = "";
 let uploadedDocumentsList = [];
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initGeolocation();
   loadMoodLogs();
   loadInsights();
+<<<<<<< HEAD
   loadDocuments();
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   loadFacilities();
   loadDoctors();
   setupChat();
@@ -58,13 +64,19 @@ function initTabs() {
       if (targetView === "reports") {
         loadInsights();
         loadMoodLogs();
+<<<<<<< HEAD
         loadDocuments();
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
       }
     });
   });
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 // ----------------- GEOLOCATION -----------------
 
 function initGeolocation() {
@@ -191,6 +203,7 @@ function renderChart(logs) {
   }).join("");
 }
 
+<<<<<<< HEAD
 // ----------------- MEDICAL DOCUMENTS VAULT & PAST VS PRESENT COMPARISON -----------------
 
 async function loadDocuments() {
@@ -548,19 +561,44 @@ window.deleteDocument = async function(docId, e) {
 };
 
 // ----------------- AI CLINICAL INSIGHTS & COMPARATIVE PDF EXPORT -----------------
+=======
+// ----------------- AI CLINICAL INSIGHTS & PDF EXPORT -----------------
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
 async function loadInsights() {
   try {
     const res = await fetch(`${API_BASE}/api/insights/analyze`, { method: "POST" });
     if (!res.ok) return;
     const data = await res.json();
+<<<<<<< HEAD
     // Handled in comparison view
+=======
+
+    const badge = document.getElementById("insight-trajectory-badge");
+    const desc = document.getElementById("insight-description");
+    const themesElem = document.getElementById("insight-themes-list");
+    const recElem = document.getElementById("insight-recommendation");
+
+    if (badge) {
+      badge.innerText = `TRAJECTORY: ${data.trajectory.toUpperCase()}`;
+      badge.style.background = data.trajectory === "improving" ? "var(--emerald-bg)" : "rgba(2,132,199,0.15)";
+      badge.style.color = data.trajectory === "improving" ? "var(--emerald)" : "var(--primary)";
+    }
+    if (desc) desc.innerText = data.trajectory_description;
+    if (themesElem) {
+      themesElem.innerHTML = data.identified_themes.map((t) => `
+        <span style="background:var(--bg-surface);border:1px solid var(--border-color);padding:0.25rem 0.6rem;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:600;">${t}</span>
+      `).join(" ");
+    }
+    if (recElem) recElem.innerText = data.recommendation;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   } catch (e) {
     console.error("Could not load insights:", e);
   }
 }
 
 window.downloadClinicalPdf = async function () {
+<<<<<<< HEAD
   const btn1 = document.getElementById("download-pdf-btn");
   const btn2 = document.getElementById("reports-pdf-btn");
   [btn1, btn2].forEach((b) => {
@@ -569,6 +607,13 @@ window.downloadClinicalPdf = async function () {
       b.innerText = "⏳ Generating Comparative PDF...";
     }
   });
+=======
+  const btn = document.getElementById("download-pdf-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "⏳ Generating Clinical PDF...";
+  }
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
   try {
     const res = await fetch(`${API_BASE}/api/reports/pdf`, {
@@ -577,7 +622,10 @@ window.downloadClinicalPdf = async function () {
       body: JSON.stringify({
         patient_name: "Lagu (Trauma Recovery)",
         patient_phone: "+91 98765 43210",
+<<<<<<< HEAD
         doc_id: selectedComparisonDocId || undefined
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
       }),
     });
 
@@ -587,12 +635,17 @@ window.downloadClinicalPdf = async function () {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
+<<<<<<< HEAD
     a.download = "TraumaGuard_Clinical_Comparative_Summary_Report.pdf";
+=======
+    a.download = "TraumaGuard_Clinical_Summary_Report.pdf";
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     document.body.appendChild(a);
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
 
+<<<<<<< HEAD
     showToast("📄 Clinical Comparative PDF report downloaded successfully!", "success");
   } catch (err) {
     showToast("Could not download report from backend.", "error");
@@ -604,11 +657,23 @@ window.downloadClinicalPdf = async function () {
     if (btn2) {
       btn2.disabled = false;
       btn2.innerHTML = "📥 Export Doctor PDF (ReportLab)";
+=======
+    showToast("📄 Clinical PDF report downloaded successfully!", "success");
+  } catch (err) {
+    showToast("Could not download report from backend.", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "📥 Download Doctor PDF (ReportLab)";
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     }
   }
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 // ----------------- EMERGENCY SOS & BROADCAST -----------------
 
 window.activateEmergencySOS = async function () {
@@ -758,6 +823,7 @@ window.submitDoctorBooking = async function (e) {
   }
 };
 
+<<<<<<< HEAD
 // ----------------- AI MENTAL HEALTH CHAT & SEPARATE SESSIONS -----------------
 
 let currentChatThreadId = null;
@@ -1010,6 +1076,18 @@ window.deleteCurrentSession = async function () {
   await deleteChatSession(currentChatThreadId, null);
 };
 
+=======
+// ----------------- AI MENTAL HEALTH CHAT -----------------
+
+function setupChat() {
+  const input = document.getElementById("chat-message-input");
+  if (!input) return;
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendChatMessage();
+  });
+}
+
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 window.sendQuickPrompt = function (text) {
   const input = document.getElementById("chat-message-input");
   if (input) {
@@ -1019,25 +1097,35 @@ window.sendQuickPrompt = function (text) {
 };
 
 window.sendChatMessage = async function () {
+<<<<<<< HEAD
   if (isSendingChatMessage) return;
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   const input = document.getElementById("chat-message-input");
   const msg = input.value.trim();
   if (!msg) return;
 
+<<<<<<< HEAD
   if (!currentChatThreadId) {
     await createNewChatSession(false);
   }
 
   isSendingChatMessage = true;
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   const chatContainer = document.getElementById("chat-messages-box");
 
   // Append user bubble
   const userDiv = document.createElement("div");
   userDiv.className = "chat-bubble user";
+<<<<<<< HEAD
   userDiv.innerHTML = `
     <div>${escapeHtml(msg)}</div>
     <div style="font-size:0.65rem;color:rgba(255,255,255,0.7);margin-top:0.3rem;text-align:right;">Just now</div>
   `;
+=======
+  userDiv.innerText = msg;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   chatContainer.appendChild(userDiv);
   input.value = "";
   chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1045,12 +1133,16 @@ window.sendChatMessage = async function () {
   // Typing placeholder
   const typingDiv = document.createElement("div");
   typingDiv.className = "chat-bubble assistant";
+<<<<<<< HEAD
   typingDiv.innerHTML = `
     <div class="chat-tag">Analyzing Triage & Somatic Patterns...</div>
     <div style="display:flex;align-items:center;gap:0.5rem;color:var(--text-secondary);">
       <span>Processing clinical stabilization guidance...</span>
     </div>
   `;
+=======
+  typingDiv.innerText = "Analyzing somatic & emotional patterns...";
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   chatContainer.appendChild(typingDiv);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
@@ -1058,16 +1150,21 @@ window.sendChatMessage = async function () {
     const res = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
       body: JSON.stringify({
         thread_id: currentChatThreadId,
         message: msg,
         user_id: "usr_default"
       }),
+=======
+      body: JSON.stringify({ message: msg }),
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     });
 
     if (!res.ok) throw new Error("Chat request failed");
     const data = await res.json();
 
+<<<<<<< HEAD
     const sev = (data.severity || "").toLowerCase();
     const sevClass = sev === "high" ? "high" : (sev === "moderate" ? "moderate" : "");
 
@@ -1102,3 +1199,15 @@ window.sendChatMessage = async function () {
   }
 };
 
+=======
+    typingDiv.innerHTML = `
+      <div class="chat-tag">${data.matched_condition || "Clinical Guidance"} • ${data.severity || "Normal"}</div>
+      <div>${data.reply}</div>
+      <div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.4rem;text-align:right;">${data.timestamp}</div>
+    `;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  } catch (err) {
+    typingDiv.innerText = "I am here with you. If you are experiencing high acute distress, please dial 14416 (Tele-MANAS) or trigger our Emergency SOS tab.";
+  }
+};
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569

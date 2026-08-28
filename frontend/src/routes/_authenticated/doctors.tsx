@@ -229,7 +229,11 @@ function DoctorsPage() {
         }
       } catch {}
 
+<<<<<<< HEAD
       const res = await fetch("/api/doctors/book/", {
+=======
+      const res = await fetch("http://localhost:8000/api/doctors/book/", {
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

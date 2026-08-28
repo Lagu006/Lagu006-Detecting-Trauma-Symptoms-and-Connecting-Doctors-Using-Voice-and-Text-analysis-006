@@ -46,7 +46,11 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
+<<<<<<< HEAD
   const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+=======
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     global: {
       fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
     },
@@ -56,6 +60,7 @@ function createSupabaseClient() {
       autoRefreshToken: true,
     },
   });
+<<<<<<< HEAD
 
   // --- MOCK OVERRIDES FOR PAUSED SUPABASE ---
   if (typeof window !== "undefined") {
@@ -112,6 +117,8 @@ function createSupabaseClient() {
   }
 
   return client;
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;

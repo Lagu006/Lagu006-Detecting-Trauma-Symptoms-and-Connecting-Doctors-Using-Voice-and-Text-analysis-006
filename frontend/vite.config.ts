@@ -17,6 +17,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+<<<<<<< HEAD
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8000",
@@ -29,6 +30,9 @@ export default defineConfig({
     },
   },
 
+=======
+  },
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   resolve: {
     alias: {
       "@": "/src",

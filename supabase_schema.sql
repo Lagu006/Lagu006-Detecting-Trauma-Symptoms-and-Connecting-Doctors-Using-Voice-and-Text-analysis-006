@@ -55,6 +55,7 @@ ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "own_messages_all" ON public.chat_messages;
 CREATE POLICY "own_messages_all" ON public.chat_messages FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+<<<<<<< HEAD
 -- 3b. STRUCTURED USER STATE TABLE
 CREATE TABLE IF NOT EXISTS public.user_state (
   thread_id UUID PRIMARY KEY REFERENCES public.chat_threads(id) ON DELETE CASCADE,
@@ -75,6 +76,8 @@ ALTER TABLE public.user_state ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "own_user_state_all" ON public.user_state;
 CREATE POLICY "own_user_state_all" ON public.user_state FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 -- 4. MOOD LOGS / RECORDS TABLE
 CREATE TABLE IF NOT EXISTS public.mood_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -213,6 +216,7 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+<<<<<<< HEAD
 
 -- 8. UPLOADED MEDICAL DOCUMENTS & PHOTOS TABLE (PAST VS PRESENT COMPARATIVE VAULT)
 CREATE TABLE IF NOT EXISTS public.uploaded_documents (
@@ -236,3 +240,5 @@ GRANT ALL ON public.uploaded_documents TO service_role;
 ALTER TABLE public.uploaded_documents ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "own_documents_all" ON public.uploaded_documents;
 CREATE POLICY "own_documents_all" ON public.uploaded_documents FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569

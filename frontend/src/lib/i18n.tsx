@@ -36,7 +36,10 @@ const dictionaries: Partial<Record<LangCode, Dict>> = {
       "SMS OTP requires a paid provider (Twilio etc.). Email & Google work out of the box.",
     "nav.dashboard": "Dashboard",
     "nav.chat": "AI Chat",
+<<<<<<< HEAD
     "nav.chat_history": "Previous Chats",
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     "nav.records": "Records",
     "nav.reports": "Reports",
     "nav.doctors": "Doctors",
@@ -100,7 +103,10 @@ const dictionaries: Partial<Record<LangCode, Dict>> = {
     "auth.sms.note": "SMS OTP के लिए Twilio जैसे भुगतान प्रदाता की आवश्यकता है।",
     "nav.dashboard": "डैशबोर्ड",
     "nav.chat": "AI चैट",
+<<<<<<< HEAD
     "nav.chat_history": "पिछली बातचीत",
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     "nav.records": "रिकॉर्ड",
     "nav.reports": "रिपोर्ट",
     "nav.doctors": "डॉक्टर",
@@ -164,7 +170,10 @@ const dictionaries: Partial<Record<LangCode, Dict>> = {
     "auth.sms.note": "SMS OTPకి Twilio వంటి చెల్లింపు ప్రొవైడర్ అవసరం.",
     "nav.dashboard": "డాష్‌బోర్డ్",
     "nav.chat": "AI చాట్",
+<<<<<<< HEAD
     "nav.chat_history": "గత సంభాషణలు",
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     "nav.records": "రికార్డులు",
     "nav.reports": "నివేదికలు",
     "nav.doctors": "వైద్యులు",

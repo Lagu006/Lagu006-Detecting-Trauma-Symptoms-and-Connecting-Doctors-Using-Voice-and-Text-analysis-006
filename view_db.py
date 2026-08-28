@@ -97,6 +97,7 @@ def print_logins_table():
     print(f" Total Logins Shown: {len(logins)}\n")
 
 
+<<<<<<< HEAD
 def print_threads_table():
     threads = database.get_chat_threads()
     print("\n" + "=" * 115)
@@ -142,6 +143,8 @@ def print_chat_messages_table():
     print(f" Total Messages across all sessions: {total_msgs}\n")
 
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 def print_generic_table(table_name):
     with database.get_db_cursor() as cur:
         cur.execute(f'SELECT * FROM "{table_name}" ORDER BY 1 DESC LIMIT 25')
@@ -180,14 +183,20 @@ def main():
         print_customers_table()
     elif arg in ["logins", "sessions", "history"]:
         print_logins_table()
+<<<<<<< HEAD
     elif arg in ["threads", "chat_threads"]:
         print_threads_table()
     elif arg in ["chat", "chat_messages", "messages"]:
         print_chat_messages_table()
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     else:
         print_generic_table(arg)
 
 
 if __name__ == "__main__":
     main()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569

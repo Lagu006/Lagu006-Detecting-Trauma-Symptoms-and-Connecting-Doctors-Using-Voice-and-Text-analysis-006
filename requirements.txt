@@ -7,5 +7,8 @@ sqlalchemy>=2.0.28
 reportlab>=4.1.0
 openai>=1.14.0
 python-dotenv>=1.0.1
+<<<<<<< HEAD
 python-multipart>=0.0.19
 
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569

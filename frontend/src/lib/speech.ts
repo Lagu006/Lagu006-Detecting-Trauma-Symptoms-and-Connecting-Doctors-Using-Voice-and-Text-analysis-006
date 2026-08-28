@@ -24,10 +24,15 @@ function browserSpeak(text: string, lang: string, onEnd: () => void) {
 export function useSpeech(lang: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+<<<<<<< HEAD
   const currentRequestRef = useRef<number>(0);
 
   const stop = useCallback(() => {
     currentRequestRef.current += 1;
+=======
+
+  const stop = useCallback(() => {
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -43,6 +48,7 @@ export function useSpeech(lang: string) {
     async (rawText: string, id = "current") => {
       const text = cleanForSpeech(rawText);
       if (!text) return;
+<<<<<<< HEAD
       
       stop();
       const requestId = currentRequestRef.current;
@@ -71,6 +77,26 @@ export function useSpeech(lang: string) {
         browserSpeak(text, lang, () => {
           if (currentRequestRef.current === requestId) setSpeakingId(null);
         });
+=======
+      stop();
+      setSpeakingId(id);
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        const res = await fetch(`${API_URL}/api/tts/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        const blob = await res.blob();
+        const audio = new Audio(URL.createObjectURL(blob));
+        audioRef.current = audio;
+        audio.onended = () => setSpeakingId(null);
+        audio.onerror = () => browserSpeak(text, lang, () => setSpeakingId(null));
+        await audio.play();
+      } catch {
+        browserSpeak(text, lang, () => setSpeakingId(null));
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
       }
     },
     [lang, stop],

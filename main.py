@@ -1,6 +1,7 @@
 import os
 import io
 import uuid
+<<<<<<< HEAD
 import base64
 import datetime
 import json
@@ -25,6 +26,18 @@ try:
 except ImportError:
     OpenAI = None
 
+=======
+import datetime
+from pathlib import Path
+from typing import List, Optional, Dict, Any
+
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
+
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 import database
 
 # Initialize Database
@@ -32,8 +45,13 @@ database.init_db()
 
 app = FastAPI(
     title="TraumaGuard AI - High Performance FastAPI Backend",
+<<<<<<< HEAD
     description="Unified clinical AI mental health & trauma stabilization platform with Past vs Present comparative reporting and document vault.",
     version="2.1.0"
+=======
+    description="Unified clinical AI mental health & trauma stabilization platform with pure SQLite SQL database.",
+    version="2.0.0"
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 )
 
 # CORS Setup
@@ -45,6 +63,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+<<<<<<< HEAD
 # Static, Templates, and Uploads directories
 BASE_DIR = Path(__file__).parent
 STATIC_DIR = BASE_DIR / "static"
@@ -54,6 +73,14 @@ UPLOADS_DIR = STATIC_DIR / "uploads"
 STATIC_DIR.mkdir(exist_ok=True)
 TEMPLATES_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+=======
+# Static and Templates directories
+BASE_DIR = Path(__file__).parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR.mkdir(exist_ok=True)
+TEMPLATES_DIR.mkdir(exist_ok=True)
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
@@ -85,13 +112,17 @@ class NotificationCreateRequest(BaseModel):
     type: Optional[str] = "REMINDER"
 
 class ChatMessageRequest(BaseModel):
+<<<<<<< HEAD
     thread_id: Optional[str] = "thread_default"
     user_id: Optional[str] = "usr_default"
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     message: Optional[str] = None
     messages: Optional[List[Dict[str, Any]]] = None
     language: Optional[str] = "en"
     condition: Optional[str] = None
     severity: Optional[str] = None
+<<<<<<< HEAD
     api_key: Optional[str] = None
 
 class CreateThreadRequest(BaseModel):
@@ -114,11 +145,16 @@ class DocumentUploadJsonRequest(BaseModel):
 class CompareReportsRequest(BaseModel):
     doc_id: Optional[str] = None
     user_id: Optional[str] = "usr_default"
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
 class ReportPdfRequest(BaseModel):
     patient_name: Optional[str] = "Lagu (Trauma Recovery)"
     patient_phone: Optional[str] = "+91 98765 43210"
+<<<<<<< HEAD
     doc_id: Optional[str] = None
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     logs: Optional[List[Dict[str, Any]]] = None
 
 class InsightsRequest(BaseModel):
@@ -135,7 +171,11 @@ async def serve_index():
     return FileResponse(str(index_file))
 
 
+<<<<<<< HEAD
 # ----------------- Mood Logs API -----------------
+=======
+# ----------------- Mood Logs API (SQLite) -----------------
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
 @app.get("/api/mood/logs")
 async def get_mood_logs():
@@ -147,6 +187,7 @@ async def create_mood_log(req: MoodLogCreate):
     if req.risk_score < 0 or req.risk_score > 100:
         raise HTTPException(status_code=400, detail="Risk score must be between 0 and 100")
     log = database.add_mood_log(req.risk_score, req.mood, req.note or "")
+<<<<<<< HEAD
     return {"success": True, "log": log, "message": "Mood check-in recorded into database."}
 
 
@@ -290,10 +331,17 @@ async def compare_reports(req: Optional[CompareReportsRequest] = None):
 
 
 # ----------------- Upgraded Clinical ReportLab PDF Generator -----------------
+=======
+    return {"success": True, "log": log, "message": "Mood check-in recorded into SQLite database."}
+
+
+# ----------------- Clinical ReportLab PDF Generator -----------------
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
 @app.post("/api/reports/pdf")
 @app.post("/api/reports/pdf/")
 async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
+<<<<<<< HEAD
     """
     Generates an executive-grade clinical PDF incorporating:
     1. Patient Demographics & Assessment Window
@@ -305,10 +353,13 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
     7. Specialist Care Plan & Prescriptive Recommendations
     8. Treating Clinician Attestation Block
     """
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     req_obj = req or ReportPdfRequest()
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+<<<<<<< HEAD
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
 
     # Fetch comparison data and uploaded documents
@@ -330,6 +381,9 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
     patient_name = req_obj.patient_name or "Lagu (Trauma Recovery)"
     patient_phone = req_obj.patient_phone or "+91 98765 43210"
     report_ref = f"TGR-{datetime.datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:4].upper()}"
+=======
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -342,47 +396,78 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
     )
 
     styles = getSampleStyleSheet()
+<<<<<<< HEAD
     
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
+<<<<<<< HEAD
         fontSize=16,
         leading=20,
         textColor=colors.HexColor('#0F172A'),
         spaceAfter=2
+=======
+        fontSize=18,
+        leading=22,
+        textColor=colors.HexColor('#0F172A'),
+        spaceAfter=4
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     )
     subtitle_style = ParagraphStyle(
         'DocSubtitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
+<<<<<<< HEAD
         fontSize=8.5,
         leading=11,
         textColor=colors.HexColor('#0284C7'),
         spaceAfter=4
+=======
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor('#0284C7'),
+        spaceAfter=6
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     )
     h2_style = ParagraphStyle(
         'H2',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
+<<<<<<< HEAD
         fontSize=11,
         leading=14,
         textColor=colors.HexColor('#0F172A'),
         spaceBefore=8,
         spaceAfter=4
+=======
+        fontSize=12,
+        leading=15,
+        textColor=colors.HexColor('#1E293B'),
+        spaceBefore=10,
+        spaceAfter=6
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     )
     body_style = ParagraphStyle(
         'Body',
         parent=styles['Normal'],
         fontName='Helvetica',
+<<<<<<< HEAD
         fontSize=8.5,
         leading=11.5,
+=======
+        fontSize=9,
+        leading=13,
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
         textColor=colors.HexColor('#334155')
     )
     bold_style = ParagraphStyle(
         'BoldBody',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
+<<<<<<< HEAD
         fontSize=8.5,
         leading=11.5,
         textColor=colors.HexColor('#0F172A')
@@ -459,10 +544,51 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
         ]
     ]
     t_info = Table(info_data, colWidths=[110, 160, 110, 160])
+=======
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor('#0F172A')
+    )
+
+    elements = []
+
+    # Header
+    elements.append(Paragraph("TRAUMAGUARD AI - CLINICAL STABILITY & TRAUMA REPORT", title_style))
+    elements.append(Paragraph(f"CONFIDENTIAL MEDICAL SUMMARY - GENERATED {datetime.datetime.now().strftime('%B %d, %Y at %H:%M')}", subtitle_style))
+    elements.append(Spacer(1, 4))
+    elements.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0284C7'), spaceBefore=2, spaceAfter=8))
+
+    # Patient info
+    logs = req_obj.logs if req_obj.logs is not None else database.get_mood_logs(limit=20)
+    scores = [int(l.get('risk_score', 0)) for l in logs] if logs else [35]
+    avg_score = round(sum(scores) / len(scores), 1) if scores else 35.0
+    peak_score = max(scores) if scores else 35
+
+    patient_name = req_obj.patient_name or "Lagu (Trauma Recovery)"
+    patient_phone = req_obj.patient_phone or "+91 98765 43210"
+
+    info_data = [
+        [
+            Paragraph("<b>Patient Name:</b>", body_style), Paragraph(patient_name, bold_style),
+            Paragraph("<b>Assessment Period:</b>", body_style), Paragraph("Last 14 Days", bold_style)
+        ],
+        [
+            Paragraph("<b>Contact Phone:</b>", body_style), Paragraph(patient_phone, body_style),
+            Paragraph("<b>Total Check-ins:</b>", body_style), Paragraph(str(len(logs)), bold_style)
+        ],
+        [
+            Paragraph("<b>Mean Distress Index:</b>", body_style), Paragraph(f"{avg_score}/100", bold_style),
+            Paragraph("<b>Peak Acute Distress:</b>", body_style), Paragraph(f"{peak_score}/100", bold_style)
+        ]
+    ]
+
+    t_info = Table(info_data, colWidths=[120, 150, 120, 150])
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     t_info.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F8FAFC')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CBD5E1')),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
+<<<<<<< HEAD
         ('TOPPADDING', (0,0), (-1,-1), 4),
         ('BOTTOMPADDING', (0,0), (-1,-1), 4),
     ]))
@@ -649,11 +775,54 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
         ])
 
     t_logs = Table(log_rows, colWidths=[100, 55, 80, 305])
+=======
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+    ]))
+    elements.append(t_info)
+    elements.append(Spacer(1, 10))
+
+    # Clinical Trajectory
+    elements.append(Paragraph("1. CLINICAL TRAJECTORY & METRIC ANALYSIS", h2_style))
+    status_text = "Stabilizing" if avg_score < 40 else ("Elevated Vulnerability" if avg_score > 60 else "Moderate / Active Coping")
+    summary_p = (
+        f"The patient demonstrates a <b>{status_text}</b> autonomic profile over the evaluated window. "
+        f"Average distress registered at <b>{avg_score}/100</b>, with a peak recorded level of <b>{peak_score}/100</b>. "
+        f"Somatic regulation routines and consistent logging have established an objective foundation for ongoing psychotherapy."
+    )
+    elements.append(Paragraph(summary_p, body_style))
+    elements.append(Spacer(1, 10))
+
+    # Check-in History Table
+    elements.append(Paragraph("2. RECENT PSYCHOLOGICAL CHECK-IN LOGS (SQL STORED)", h2_style))
+    log_rows = [[
+        Paragraph("<b>Date / Time</b>", bold_style),
+        Paragraph("<b>Distress</b>", bold_style),
+        Paragraph("<b>Mood Tag</b>", bold_style),
+        Paragraph("<b>Clinical Notes & Triggers</b>", bold_style)
+    ]]
+
+    for log in logs[:10]:
+        date_str = str(log.get('logged_at', 'Recent'))[:16]
+        score_val = str(log.get('risk_score', '—'))
+        mood_val = str(log.get('mood', '—'))
+        note_val = str(log.get('note', 'No clinical remarks recorded.')) or 'No clinical remarks recorded.'
+
+        log_rows.append([
+            Paragraph(date_str, body_style),
+            Paragraph(f"<b>{score_val}</b>/100", body_style),
+            Paragraph(mood_val, body_style),
+            Paragraph(note_val, body_style)
+        ])
+
+    t_logs = Table(log_rows, colWidths=[110, 60, 80, 290])
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     t_logs.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0284C7')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#F8FAFC')]),
+<<<<<<< HEAD
         ('TOPPADDING', (0,0), (-1,-1), 3.5),
         ('BOTTOMPADDING', (0,0), (-1,-1), 3.5),
     ]))
@@ -675,6 +844,18 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
     elements.append(Paragraph("7. TREATING CLINICIAN ATTESTATION & OFFICIAL SIGN-OFF", h2_style))
     elements.append(Paragraph("I have reviewed this TraumaGuard AI comparative clinical progress dossier and validated the objective telemetry against clinical psychiatric evaluation.", body_style))
     elements.append(Spacer(1, 10))
+=======
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    elements.append(t_logs)
+    elements.append(Spacer(1, 12))
+
+    # Clinician Sign-off
+    elements.append(Paragraph("3. TREATING CLINICIAN ATTESTATION", h2_style))
+    elements.append(Paragraph("I have reviewed this TraumaGuard AI longitudinal distress trajectory report in conjunction with clinical interview.", body_style))
+    elements.append(Spacer(1, 15))
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
     sig_data = [
         [Paragraph("Clinician Signature: ___________________________", body_style), Paragraph("Date: ______________", body_style)],
@@ -690,7 +871,11 @@ async def generate_clinical_pdf(req: Optional[ReportPdfRequest] = None):
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
+<<<<<<< HEAD
         headers={"Content-Disposition": f"attachment; filename=TraumaGuard_Clinical_Comparative_Report_{patient_name.replace(' ', '_')}.pdf"}
+=======
+        headers={"Content-Disposition": f"attachment; filename=TraumaGuard_Clinical_Report_{patient_name.replace(' ', '_')}.pdf"}
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
     )
 
 
@@ -773,6 +958,7 @@ async def book_doctor(req: DoctorBookingRequest):
 
 # ----------------- AI Mental Health Chatbot API (SQLite) -----------------
 
+<<<<<<< HEAD
 # ----------------- AI Mental Health Chatbot API & Multi-Session History -----------------
 
 @app.get("/api/chat/threads")
@@ -884,6 +1070,123 @@ async def mental_health_chat_stream(req: Optional[ChatMessageRequest] = None):
         import traceback
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
+=======
+@app.post("/api/chat")
+@app.post("/api/chat/")
+async def mental_health_chat(req: Optional[ChatMessageRequest] = None):
+    req_obj = req or ChatMessageRequest()
+    # Extract user message from either single 'message' or 'messages' history array
+    user_msg = ""
+    if req_obj.message:
+        user_msg = req_obj.message.strip()
+    elif req_obj.messages and len(req_obj.messages) > 0:
+        last_item = req_obj.messages[-1]
+        user_msg = str(last_item.get("content", "")).strip()
+
+    if not user_msg:
+        user_msg = "Hello, I need assistance with managing distress."
+
+    database.save_chat_message("user", user_msg)
+
+    # Intelligent clinical parsing & intent analysis
+    lower_msg = user_msg.lower()
+
+    if any(w in lower_msg for w in ["suicide", "end my life", "kill myself", "die", "hurt myself", "end it all"]):
+        condition = "Acute Crisis"
+        severity = "HIGH"
+        confidence = 0.98
+        reply = (
+            "Severity: HIGH\n\n"
+            "I hear how much pain and distress you are carrying right now, and I want you to know that you are not alone. "
+            "Please pause, take a deep breath, and connect with immediate support:\n\n"
+            "🚨 **24/7 Free & Confidential Emergency Helplines:**\n"
+            "• **Tele-MANAS (Govt. of India):** Dial `14416` or `1800-891-4416`\n"
+            "• **KIRAN Mental Health Line:** `1800-599-0019`\n"
+            "• **National Emergency Service:** Dial `112`\n\n"
+            "Our Emergency SOS tab is also ready to dispatch live GPS assistance to your emergency contacts."
+        )
+    elif any(w in lower_msg for w in ["flashback", "car accident", "incident", "trauma", "nightmare", "crash", "reliving", "trigger"]):
+        condition = "PTSD & Trauma Trigger"
+        severity = "MODERATE"
+        confidence = 0.92
+        reply = (
+            "Severity: MODERATE\n\n"
+            "What you are experiencing right now is an acute trauma trigger — your nervous system is temporarily reacting as if the past event is happening now. "
+            "Let's practice the **5-4-3-2-1 Somatic Grounding** technique together right now:\n\n"
+            "👁️ **5 things you can see:** Look around your room and name 5 specific objects.\n"
+            "🖐️ **4 things you can touch:** Feel the fabric of your clothes, the floor beneath your feet, or a cool surface.\n"
+            "👂 **3 things you can hear:** Listen for ambient sounds (fan, traffic, your own breath).\n"
+            "👃 **2 things you can smell:** Inhale gently through your nose.\n"
+            "👅 **1 thing you can taste:** Focus on the taste in your mouth or take a slow sip of water.\n\n"
+            "You are safe right now in this physical space. Would you like to try 4-4-4-4 Box Breathing or connect with a trauma therapist?"
+        )
+    elif any(w in lower_msg for w in ["panic", "anxiety", "can't breathe", "heart racing", "chest tight", "hyperventilating", "tightness", "shaking", "choking"]):
+        condition = "Panic & Acute Anxiety"
+        severity = "HIGH"
+        confidence = 0.95
+        reply = (
+            "Severity: HIGH\n\n"
+            "You are safe in this moment. Place both feet firmly flat on the ground and place one hand gently over your chest.\n\n"
+            "🌬️ **Immediate Autonomic Reset:**\n"
+            "1. **Physiological Sigh:** Take two quick sniffs in through your nose, then a long, slow exhale through your mouth.\n"
+            "2. **4-4-4-4 Box Breathing:** Inhale 4 seconds, hold 4 seconds, exhale 4 seconds, hold 4 seconds.\n"
+            "3. **Remember:** Your heart rate is temporarily elevated due to an adrenaline spike, but this sensation will peak and subside in a few minutes.\n\n"
+            "Focus on the support of the chair beneath you. How does your chest feel as you take that slow breath out?"
+        )
+    elif any(w in lower_msg for w in ["sleep", "insomnia", "tired", "restless", "waking up", "bad dream", "sleepless"]):
+        condition = "Sleep Disruption"
+        severity = "MODERATE"
+        confidence = 0.88
+        reply = (
+            "Severity: MODERATE\n\n"
+            "Sleep disruptions and nocturnal stress are very common when the nervous system is hyper-aroused. "
+            "Here is a practical sleep stabilization routine for tonight:\n\n"
+            "🛌 **Sleep Reset Protocol:**\n"
+            "1. **The 4-7-8 Breath:** Inhale through your nose for 4 seconds, hold for 7 seconds, exhale slowly for 8 seconds. Repeat 4 times.\n"
+            "2. **Brain-Dump Journaling:** Write down thoughts or concerns on paper to signal your mind that they are stored and safe.\n"
+            "3. **Dim Environment:** Avoid blue light from mobile devices 45 minutes before sleep.\n\n"
+            "Would you like me to guide you through a brief somatic progressive muscle relaxation?"
+        )
+    elif any(w in lower_msg for w in ["doctor", "psychiatrist", "therapist", "consultation", "appointment", "clinic"]):
+        condition = "Specialist Consultation"
+        severity = "LOW"
+        confidence = 0.90
+        reply = (
+            "Severity: LOW\n\n"
+            "We have verified trauma psychiatrists and EMDR clinical psychologists ready for consultation. "
+            "You can explore their profiles in the **Specialists** tab and schedule an appointment directly. "
+            "Would you like me to recommend a specialist based on your city or preferred language?"
+        )
+    else:
+        condition = "General Mental Wellness"
+        severity = "LOW"
+        confidence = 0.80
+        reply = (
+            "Severity: LOW\n\n"
+            "Thank you for sharing that with me. Acknowledging your emotions and giving them words is an essential foundation for recovery.\n\n"
+            "I am here with you to explore coping strategies, provide somatic exercises, or log your distress index. "
+            "How has your stress level felt overall today?"
+        )
+
+    database.save_chat_message("assistant", reply, condition, severity, confidence)
+
+    return {
+        "text": reply,
+        "reply": reply,
+        "matched_condition": condition,
+        "severity": severity,
+        "confidence": confidence,
+        "timestamp": datetime.datetime.now().strftime("%H:%M")
+    }
+
+@app.get("/api/chat/history")
+async def chat_history():
+    history = database.get_chat_history(limit=30)
+    return {"messages": history}
+
+
+# ----------------- User Management & Login Tracking API -----------------
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 
 @app.post("/api/users/sync")
 @app.post("/api/users/sync/")

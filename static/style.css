@@ -535,6 +535,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 /* ==========================================================================
+<<<<<<< HEAD
    AI CHAT INTERFACE (Split-Pane Sessions Layout)
    ========================================================================== */
 
@@ -810,18 +811,36 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .chat-quick-prompts::-webkit-scrollbar {
   height: 3px;
+=======
+   AI CHAT INTERFACE
+   ========================================================================== */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 580px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
+<<<<<<< HEAD
   padding: 1.25rem;
+=======
+  padding: 1.5rem;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .chat-bubble {
+<<<<<<< HEAD
   max-width: 82%;
   padding: 0.9rem 1.2rem;
   border-radius: var(--radius-lg);
@@ -830,14 +849,28 @@ input[type=range]::-webkit-slider-thumb:hover {
   animation: fadeIn 0.25s ease;
   word-break: break-word;
   white-space: pre-wrap;
+=======
+  max-width: 80%;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.925rem;
+  line-height: 1.5;
+  animation: fadeIn 0.2s ease;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 .chat-bubble.user {
   align-self: flex-end;
+<<<<<<< HEAD
   background: linear-gradient(135deg, var(--primary) 0%, #0274b3 100%);
   color: #FFFFFF;
   border-bottom-right-radius: var(--radius-sm);
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+=======
+  background: var(--primary);
+  color: #FFF;
+  border-bottom-right-radius: var(--radius-sm);
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 .chat-bubble.assistant {
@@ -846,16 +879,20 @@ input[type=range]::-webkit-slider-thumb:hover {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   border-bottom-left-radius: var(--radius-sm);
+<<<<<<< HEAD
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .chat-bubble.assistant strong,
 .chat-bubble.assistant b {
   color: #38BDF8;
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 .chat-tag {
   display: inline-block;
+<<<<<<< HEAD
   font-size: 0.68rem;
   font-family: var(--font-mono);
   background: rgba(2, 132, 199, 0.15);
@@ -877,12 +914,25 @@ input[type=range]::-webkit-slider-thumb:hover {
   background: rgba(245, 158, 11, 0.15);
   color: #FBBF24;
   border-color: rgba(245, 158, 11, 0.3);
+=======
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  background: rgba(2, 132, 199, 0.15);
+  color: var(--primary);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.4rem;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 .chat-input-row {
   display: flex;
   gap: 0.75rem;
+<<<<<<< HEAD
   padding: 0.9rem 1.25rem;
+=======
+  padding: 1rem 1.5rem;
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
   background: rgba(9, 13, 22, 0.95);
   border-top: 1px solid var(--border-color);
 }
@@ -896,11 +946,15 @@ input[type=range]::-webkit-slider-thumb:hover {
   border-radius: var(--radius-full);
   outline: none;
   font-size: 0.9rem;
+<<<<<<< HEAD
   transition: border-color 0.2s ease;
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 .chat-input-row input:focus {
   border-color: var(--primary);
+<<<<<<< HEAD
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
@@ -929,6 +983,8 @@ input[type=range]::-webkit-slider-thumb:hover {
   .hide-mobile {
     display: none !important;
   }
+=======
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
 }
 
 /* ==========================================================================

@@ -158,7 +158,11 @@ function RecordsPage() {
     queryKey: ["records"],
     queryFn: async () => {
       try {
+<<<<<<< HEAD
         const res = await fetch("/api/mood/logs");
+=======
+        const res = await fetch("http://localhost:8000/api/mood/logs");
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
         if (res.ok) {
           const json = await res.json();
           if (json.logs && json.logs.length > 0) {
@@ -245,7 +249,11 @@ function RecordsPage() {
 
     // 2. Save to PostgreSQL Backend
     try {
+<<<<<<< HEAD
       await fetch("/api/mood/logs", {
+=======
+      await fetch("http://localhost:8000/api/mood/logs", {
+>>>>>>> 60a320c8e08cea17efa61a45f466bf68678a8569
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
