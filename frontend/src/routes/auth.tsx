@@ -65,7 +65,7 @@ function AuthPage() {
 
     // Sync user to PostgreSQL backend
     try {
-      await fetch("http://localhost:8000/api/users/sync", {
+      await fetch("/api/users/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -99,7 +99,7 @@ function AuthPage() {
 
     // Sync newly created user to PostgreSQL database
     try {
-      await fetch("http://localhost:8000/api/users/sync", {
+      await fetch("/api/users/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

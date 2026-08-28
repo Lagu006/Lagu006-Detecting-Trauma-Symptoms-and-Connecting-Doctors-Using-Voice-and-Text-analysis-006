@@ -3,14 +3,27 @@ import io
 import uuid
 import base64
 import datetime
+import json
+import asyncio
 from pathlib import Path
 from typing import List, Optional, Dict, Any
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from fastapi import FastAPI, HTTPException, Request, Response, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, StreamingResponse
 from pydantic import BaseModel
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 
 import database
 
@@ -79,6 +92,7 @@ class ChatMessageRequest(BaseModel):
     language: Optional[str] = "en"
     condition: Optional[str] = None
     severity: Optional[str] = None
+    api_key: Optional[str] = None
 
 class CreateThreadRequest(BaseModel):
     user_id: Optional[str] = "usr_default"
@@ -793,128 +807,83 @@ async def delete_chat_session(thread_id: str):
     return {"status": "success", "deleted": success, "thread_id": thread_id}
 
 
+# ----------------- Cognitive Context, Trauma Analyzer & Conversation Engine -----------------
+
+import threading
+
+_bad_keys: Dict[str, float] = {}
+
+
+from services.chat_service import ChatService
+
+# ==============================================================================
+# CHAT ENDPOINTS (Delegated to ChatService)
+# ==============================================================================
+
 @app.post("/api/chat")
 @app.post("/api/chat/")
-async def mental_health_chat(req: Optional[ChatMessageRequest] = None):
-    req_obj = req or ChatMessageRequest()
-    thread_id = req_obj.thread_id or "thread_default"
-    user_id = req_obj.user_id or "usr_default"
+async def mental_health_chat(req: ChatMessageRequest):
+    try:
+        user_id = req.user_id if hasattr(req, 'user_id') and req.user_id else "usr_default"
+        language = req.language if hasattr(req, 'language') and req.language else "en"
+        api_key = req.api_key if hasattr(req, 'api_key') else None
+        
+        # Use provided thread_id or create a new one
+        thread_id = req.thread_id
+        if not thread_id:
+            import uuid
+            thread_id = "th_" + uuid.uuid4().hex[:8]
 
-    # Extract user message from either single 'message' or 'messages' history array
-    user_msg = ""
-    if req_obj.message:
-        user_msg = req_obj.message.strip()
-    elif req_obj.messages and len(req_obj.messages) > 0:
-        last_item = req_obj.messages[-1]
-        user_msg = str(last_item.get("content", "")).strip()
-
-    if not user_msg:
-        user_msg = "Hello, I need assistance with managing distress."
-
-    # Save user message into specific session thread
-    database.save_chat_message("user", user_msg, thread_id=thread_id, user_id=user_id)
-
-    # Intelligent clinical parsing & intent analysis
-    lower_msg = user_msg.lower()
-
-    if any(w in lower_msg for w in ["suicide", "end my life", "kill myself", "die", "hurt myself", "end it all"]):
-        condition = "Acute Crisis"
-        severity = "HIGH"
-        confidence = 0.98
-        reply = (
-            "Severity: HIGH\n\n"
-            "I hear how much pain and distress you are carrying right now, and I want you to know that you are not alone. "
-            "Please pause, take a deep breath, and connect with immediate support:\n\n"
-            "🚨 **24/7 Free & Confidential Emergency Helplines:**\n"
-            "• **Tele-MANAS (Govt. of India):** Dial `14416` or `1800-891-4416`\n"
-            "• **KIRAN Mental Health Line:** `1800-599-0019`\n"
-            "• **National Emergency Service:** Dial `112`\n\n"
-            "You are valued and safe help is always available right now."
+        result = ChatService.process_chat_request(
+            user_msg=req.message,
+            thread_id=thread_id,
+            user_id=user_id,
+            api_key=api_key,
+            language=language
         )
-    elif any(w in lower_msg for w in ["flashback", "car accident", "incident", "trauma", "nightmare", "crash", "reliving", "trigger"]):
-        condition = "PTSD & Trauma Trigger"
-        severity = "MODERATE"
-        confidence = 0.92
-        reply = (
-            "Severity: MODERATE\n\n"
-            "What you are experiencing right now is an acute trauma trigger — your nervous system is temporarily reacting as if the past event is happening now. "
-            "Let's practice the **5-4-3-2-1 Somatic Grounding** technique together right now:\n\n"
-            "👁️ **5 things you can see:** Look around your room and name 5 specific objects.\n"
-            "🖐️ **4 things you can touch:** Feel the fabric of your clothes, the floor beneath your feet, or a cool surface.\n"
-            "👂 **3 things you can hear:** Listen for ambient sounds (fan, traffic, your own breath).\n"
-            "👃 **2 things you can smell:** Inhale gently through your nose.\n"
-            "👅 **1 thing you can taste:** Focus on the taste in your mouth or take a slow sip of water.\n\n"
-            "You are safe right now in this physical space. Would you like to try 4-4-4-4 Box Breathing or connect with a trauma therapist?"
+        
+        return JSONResponse({
+            "text": result["text"],
+            "thread_id": thread_id,
+            "matched_condition": result["primary_concern"],
+            "severity": result["severity"]
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/chat/stream")
+@app.post("/api/chat/stream/")
+async def mental_health_chat_stream(req: Optional[ChatMessageRequest] = None):
+    try:
+        if not req:
+            raise HTTPException(status_code=400, detail="Request body missing")
+            
+        user_id = req.user_id if hasattr(req, 'user_id') and req.user_id else "usr_default"
+        language = req.language if hasattr(req, 'language') and req.language else "en"
+        api_key = req.api_key if hasattr(req, 'api_key') else None
+        
+        thread_id = req.thread_id
+        if not thread_id:
+            import uuid
+            thread_id = "th_" + uuid.uuid4().hex[:8]
+
+        return StreamingResponse(
+            ChatService.process_chat_request_stream(
+                user_msg=req.message,
+                thread_id=thread_id,
+                user_id=user_id,
+                api_key=api_key,
+                language=language
+            ), 
+            media_type="text/event-stream"
         )
-    elif any(w in lower_msg for w in ["panic", "anxiety", "can't breathe", "heart racing", "chest tight", "hyperventilating", "tightness", "shaking", "choking"]):
-        condition = "Panic & Acute Anxiety"
-        severity = "HIGH"
-        confidence = 0.95
-        reply = (
-            "Severity: HIGH\n\n"
-            "You are safe in this moment. Place both feet firmly flat on the ground and place one hand gently over your chest.\n\n"
-            "🌬️ **Immediate Autonomic Reset:**\n"
-            "1. **Physiological Sigh:** Take two quick sniffs in through your nose, then a long, slow exhale through your mouth.\n"
-            "2. **4-4-4-4 Box Breathing:** Inhale 4 seconds, hold 4 seconds, exhale 4 seconds, hold 4 seconds.\n"
-            "3. **Remember:** Your heart rate is temporarily elevated due to an adrenaline spike, but this sensation will peak and subside in a few minutes.\n\n"
-            "Focus on the support of the chair beneath you. How does your chest feel as you take that slow breath out?"
-        )
-    elif any(w in lower_msg for w in ["sleep", "insomnia", "tired", "restless", "waking up", "bad dream", "sleepless"]):
-        condition = "Sleep Disruption"
-        severity = "MODERATE"
-        confidence = 0.88
-        reply = (
-            "Severity: MODERATE\n\n"
-            "Sleep disruptions and nocturnal stress are very common when the nervous system is hyper-aroused. "
-            "Here is a practical sleep stabilization routine for tonight:\n\n"
-            "🛌 **Sleep Reset Protocol:**\n"
-            "1. **The 4-7-8 Breath:** Inhale through your nose for 4 seconds, hold for 7 seconds, exhale slowly for 8 seconds. Repeat 4 times.\n"
-            "2. **Brain-Dump Journaling:** Write down thoughts or concerns on paper to signal your mind that they are stored and safe.\n"
-            "3. **Dim Environment:** Avoid blue light from mobile devices 45 minutes before sleep.\n\n"
-            "Would you like me to guide you through a brief somatic progressive muscle relaxation?"
-        )
-    elif any(w in lower_msg for w in ["doctor", "psychiatrist", "therapist", "consultation", "appointment", "clinic"]):
-        condition = "Specialist Consultation"
-        severity = "LOW"
-        confidence = 0.90
-        reply = (
-            "Severity: LOW\n\n"
-            "We have verified trauma psychiatrists and EMDR clinical psychologists ready for consultation. "
-            "You can explore their profiles in the **Specialists** tab and schedule an appointment directly. "
-            "Would you like me to recommend a specialist based on your city or preferred language?"
-        )
-    else:
-        condition = "General Mental Wellness"
-        severity = "LOW"
-        confidence = 0.80
-        reply = (
-            "Severity: LOW\n\n"
-            "Thank you for sharing that with me. Acknowledging your emotions and giving them words is an essential foundation for recovery.\n\n"
-            "I am here with you to explore coping strategies, provide somatic exercises, or log your distress index. "
-            "How has your stress level felt overall today?"
-        )
-
-    # Save assistant message into specific session thread
-    database.save_chat_message("assistant", reply, thread_id=thread_id, user_id=user_id, matched_condition=condition, severity=severity, confidence=confidence)
-
-    return {
-        "text": reply,
-        "reply": reply,
-        "thread_id": thread_id,
-        "matched_condition": condition,
-        "severity": severity,
-        "confidence": confidence,
-        "timestamp": datetime.datetime.now().strftime("%H:%M")
-    }
-
-@app.get("/api/chat/history")
-async def chat_history():
-    history = database.get_chat_history(limit=30)
-    return {"messages": history}
-
-
-
-# ----------------- User Management & Login Tracking API -----------------
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/api/users/sync")
 @app.post("/api/users/sync/")

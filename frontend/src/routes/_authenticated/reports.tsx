@@ -111,7 +111,7 @@ function ReportsPage() {
     queryKey: ["reportLogs"],
     queryFn: async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/mood/logs");
+        const res = await fetch("/api/mood/logs");
         if (res.ok) {
           const json = await res.json();
           if (json.logs && json.logs.length > 0) {
@@ -139,7 +139,7 @@ function ReportsPage() {
     queryKey: ["uploadedDocs"],
     queryFn: async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/documents");
+        const res = await fetch("/api/documents");
         if (res.ok) {
           const json = await res.json();
           return json.documents as UploadedDoc[];
@@ -163,7 +163,7 @@ function ReportsPage() {
     async function loadComparison() {
       setLoadingComparison(true);
       try {
-        const res = await fetch("http://localhost:8000/api/reports/compare", {
+        const res = await fetch("/api/reports/compare", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ doc_id: selectedDocId || undefined }),
@@ -226,7 +226,7 @@ function ReportsPage() {
             user_id: "usr_default",
           };
 
-          const res = await fetch("http://localhost:8000/api/documents/upload", {
+          const res = await fetch("/api/documents/upload", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -262,7 +262,7 @@ function ReportsPage() {
     e.stopPropagation();
     if (!confirm("Are you sure you want to remove this record from your vault?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${id}`, {
+      const res = await fetch(`/api/documents/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {

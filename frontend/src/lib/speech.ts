@@ -24,8 +24,10 @@ function browserSpeak(text: string, lang: string, onEnd: () => void) {
 export function useSpeech(lang: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const currentRequestRef = useRef<number>(0);
 
   const stop = useCallback(() => {
+    currentRequestRef.current += 1;
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -41,24 +43,34 @@ export function useSpeech(lang: string) {
     async (rawText: string, id = "current") => {
       const text = cleanForSpeech(rawText);
       if (!text) return;
+      
       stop();
+      const requestId = currentRequestRef.current;
       setSpeakingId(id);
+      
       try {
         const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${API_URL}/api/tts/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        });
-        if (!res.ok) throw new Error(String(res.status));
-        const blob = await res.blob();
-        const audio = new Audio(URL.createObjectURL(blob));
+        const url = new URL(`${API_URL}/api/tts/`);
+        url.searchParams.append("text", text);
+        url.searchParams.append("language", lang);
+        
+        const audio = new Audio(url.toString());
         audioRef.current = audio;
-        audio.onended = () => setSpeakingId(null);
-        audio.onerror = () => browserSpeak(text, lang, () => setSpeakingId(null));
+        audio.onended = () => {
+          if (currentRequestRef.current === requestId) setSpeakingId(null);
+        };
+        audio.onerror = () => {
+          if (currentRequestRef.current !== requestId) return;
+          browserSpeak(text, lang, () => {
+            if (currentRequestRef.current === requestId) setSpeakingId(null);
+          });
+        };
         await audio.play();
       } catch {
-        browserSpeak(text, lang, () => setSpeakingId(null));
+        if (currentRequestRef.current !== requestId) return;
+        browserSpeak(text, lang, () => {
+          if (currentRequestRef.current === requestId) setSpeakingId(null);
+        });
       }
     },
     [lang, stop],

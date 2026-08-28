@@ -15,8 +15,8 @@ export const Route = createFileRoute("/")({
     }
     
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/dashboard" });
-    throw redirect({ to: "/auth" });
+    if (data.session) throw redirect({ to: "/chat" });
+    throw redirect({ to: "/chat" });
   },
   component: () => null,
 });

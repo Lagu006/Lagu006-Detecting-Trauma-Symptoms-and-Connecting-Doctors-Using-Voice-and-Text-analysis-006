@@ -36,8 +36,8 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
     if parsed.path and len(parsed.path) > 1:
         POSTGRES_DB = parsed.path.lstrip('/')
 
-_use_sqlite = False
-_sqlite_lock = threading.Lock()
+_use_sqlite = True
+_sqlite_lock = threading.RLock()
 _connection_pool = None
 
 
@@ -380,6 +380,23 @@ def init_db():
                 type VARCHAR(50) DEFAULT 'REMINDER',
                 is_read INTEGER DEFAULT 0,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+
+        # 10. Structured User State Table (Persistent Longitudinal Assessment & Memory)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS user_state (
+                thread_id VARCHAR(100) PRIMARY KEY,
+                user_id VARCHAR(100) DEFAULT 'usr_default',
+                severity VARCHAR(50) DEFAULT 'LOW',
+                primary_concern VARCHAR(255) DEFAULT 'General Mental Wellness',
+                risk_level VARCHAR(50) DEFAULT 'Low',
+                panic_level VARCHAR(50) DEFAULT 'None',
+                sleep_issue INTEGER DEFAULT 0,
+                doctor_recommended INTEGER DEFAULT 0,
+                confidence REAL DEFAULT 0.85,
+                summary TEXT DEFAULT '',
+                last_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         """)
 
@@ -947,6 +964,88 @@ def get_chat_history(limit: int = 20) -> List[Dict[str, Any]]:
                 d['created_at'] = d['created_at'].strftime("%Y-%m-%d %H:%M:%S")
             result.append(d)
         return result
+
+
+# ----------------- Structured User State & Longitudinal Memory -----------------
+
+def get_user_state(thread_id: str) -> Optional[Dict[str, Any]]:
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT thread_id, user_id, severity, primary_concern, risk_level, panic_level, 
+                   sleep_issue, doctor_recommended, confidence, summary, last_updated
+            FROM user_state
+            WHERE thread_id = %s;
+        """, (thread_id,))
+        row = cur.fetchone()
+        if row:
+            d = dict(row)
+            if isinstance(d.get('last_updated'), datetime.datetime):
+                d['last_updated'] = d['last_updated'].strftime("%Y-%m-%d %H:%M:%S")
+            return d
+        return None
+
+
+def save_user_state(
+    thread_id: str,
+    user_id: str = "usr_default",
+    severity: str = "LOW",
+    primary_concern: str = "General Mental Wellness",
+    risk_level: str = "Low",
+    panic_level: str = "None",
+    sleep_issue: int = 0,
+    doctor_recommended: int = 0,
+    confidence: float = 0.85,
+    summary: Optional[str] = None
+) -> Dict[str, Any]:
+    t_id = thread_id or "thread_default"
+    u_id = user_id or "usr_default"
+
+    existing = get_user_state(t_id)
+    current_summary = summary if summary is not None else (existing.get("summary", "") if existing else "")
+
+    with get_db_cursor(commit=True) as cur:
+        
+        # Upsert user_state (compatible with SQLite & Postgres)
+        cur.execute("""
+            INSERT INTO user_state (thread_id, user_id, severity, primary_concern, risk_level, panic_level, sleep_issue, doctor_recommended, confidence, summary, last_updated)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT(thread_id) DO UPDATE SET
+                user_id = excluded.user_id,
+                severity = excluded.severity,
+                primary_concern = excluded.primary_concern,
+                risk_level = excluded.risk_level,
+                panic_level = excluded.panic_level,
+                sleep_issue = excluded.sleep_issue,
+                doctor_recommended = excluded.doctor_recommended,
+                confidence = excluded.confidence,
+                summary = excluded.summary,
+                last_updated = CURRENT_TIMESTAMP;
+        """, (t_id, u_id, severity, primary_concern, risk_level, panic_level, sleep_issue, doctor_recommended, confidence, current_summary))
+
+        return {
+            "thread_id": t_id,
+            "user_id": u_id,
+            "severity": severity,
+            "primary_concern": primary_concern,
+            "risk_level": risk_level,
+            "panic_level": panic_level,
+            "sleep_issue": sleep_issue,
+            "doctor_recommended": doctor_recommended,
+            "confidence": confidence,
+            "summary": current_summary,
+            "last_updated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+
+def update_thread_summary(thread_id: str, summary: str) -> bool:
+    with get_db_cursor(commit=True) as cur:
+        cur.execute("""
+            UPDATE user_state 
+            SET summary = %s, last_updated = CURRENT_TIMESTAMP 
+            WHERE thread_id = %s;
+        """, (summary, thread_id))
+        return True
+
 
 
 # ----------------- User Management -----------------

@@ -1,31 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useI18n } from "@/lib/i18n";
-import {
-  LineChart,
-  Line,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Area,
-  AreaChart,
-} from "recharts";
-import { MessageSquare, Stethoscope, Activity, TrendingUp, Mic, FileSpreadsheet } from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard — TraumaGuard AI" },
-      {
-        name: "description",
-        content: "Your stability trend, recent sessions, and care network at a glance.",
-      },
-    ],
-  }),
-  component: DashboardPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/chat" });
+  },
+  component: () => null,
 });
 
 function DashboardPage() {
@@ -35,7 +14,7 @@ function DashboardPage() {
     queryKey: ["moodLogs"],
     queryFn: async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/mood/logs");
+        const res = await fetch("/api/mood/logs");
         if (res.ok) {
           const json = await res.json();
           if (json.logs && json.logs.length > 0) {

@@ -55,6 +55,26 @@ ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "own_messages_all" ON public.chat_messages;
 CREATE POLICY "own_messages_all" ON public.chat_messages FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+-- 3b. STRUCTURED USER STATE TABLE
+CREATE TABLE IF NOT EXISTS public.user_state (
+  thread_id UUID PRIMARY KEY REFERENCES public.chat_threads(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  severity TEXT DEFAULT 'LOW',
+  primary_concern TEXT DEFAULT 'General Mental Wellness',
+  risk_level TEXT DEFAULT 'Low',
+  panic_level TEXT DEFAULT 'None',
+  sleep_issue INT DEFAULT 0,
+  doctor_recommended INT DEFAULT 0,
+  confidence NUMERIC DEFAULT 0.85,
+  summary TEXT DEFAULT '',
+  last_updated TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_state TO authenticated;
+GRANT ALL ON public.user_state TO service_role;
+ALTER TABLE public.user_state ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "own_user_state_all" ON public.user_state;
+CREATE POLICY "own_user_state_all" ON public.user_state FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
 -- 4. MOOD LOGS / RECORDS TABLE
 CREATE TABLE IF NOT EXISTS public.mood_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

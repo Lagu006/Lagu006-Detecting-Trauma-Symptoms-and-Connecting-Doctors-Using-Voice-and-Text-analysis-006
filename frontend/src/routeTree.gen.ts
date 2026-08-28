@@ -16,7 +16,6 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedChatHistoryRouteImport } from './routes/_authenticated/chat-history'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDoctorsRouteImport } from './routes/_authenticated/doctors'
-import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedRecordsRouteImport } from './routes/_authenticated/records'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -59,11 +58,6 @@ const AuthenticatedDoctorsRoute = AuthenticatedDoctorsRouteImport.update({
   path: '/doctors',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
-  id: '/emergency',
-  path: '/emergency',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -104,7 +98,6 @@ export interface FileRoutesByFullPath {
   '/chat-history': typeof AuthenticatedChatHistoryRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/doctors': typeof AuthenticatedDoctorsRoute
-  '/emergency': typeof AuthenticatedEmergencyRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/records': typeof AuthenticatedRecordsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -119,7 +112,6 @@ export interface FileRoutesByTo {
   '/chat-history': typeof AuthenticatedChatHistoryRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/doctors': typeof AuthenticatedDoctorsRoute
-  '/emergency': typeof AuthenticatedEmergencyRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/records': typeof AuthenticatedRecordsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -136,7 +128,6 @@ export interface FileRoutesById {
   '/_authenticated/chat-history': typeof AuthenticatedChatHistoryRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/doctors': typeof AuthenticatedDoctorsRoute
-  '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/records': typeof AuthenticatedRecordsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -153,7 +144,6 @@ export interface FileRouteTypes {
     | '/chat-history'
     | '/dashboard'
     | '/doctors'
-    | '/emergency'
     | '/notifications'
     | '/records'
     | '/reports'
@@ -168,7 +158,6 @@ export interface FileRouteTypes {
     | '/chat-history'
     | '/dashboard'
     | '/doctors'
-    | '/emergency'
     | '/notifications'
     | '/records'
     | '/reports'
@@ -184,7 +173,6 @@ export interface FileRouteTypes {
     | '/_authenticated/chat-history'
     | '/_authenticated/dashboard'
     | '/_authenticated/doctors'
-    | '/_authenticated/emergency'
     | '/_authenticated/notifications'
     | '/_authenticated/records'
     | '/_authenticated/reports'
@@ -251,13 +239,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDoctorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/emergency': {
-      id: '/_authenticated/emergency'
-      path: '/emergency'
-      fullPath: '/emergency'
-      preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
@@ -307,7 +288,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatHistoryRoute: typeof AuthenticatedChatHistoryRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDoctorsRoute: typeof AuthenticatedDoctorsRoute
-  AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRecordsRoute: typeof AuthenticatedRecordsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -320,7 +300,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatHistoryRoute: AuthenticatedChatHistoryRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDoctorsRoute: AuthenticatedDoctorsRoute,
-  AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRecordsRoute: AuthenticatedRecordsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,

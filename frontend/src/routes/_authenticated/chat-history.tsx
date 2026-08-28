@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   History,
@@ -63,7 +63,6 @@ interface ChatMessage {
 
 function PreviousChatsPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedThreadForPreview, setSelectedThreadForPreview] = useState<ChatThread | null>(null);
   const [previewMessages, setPreviewMessages] = useState<ChatMessage[]>([]);

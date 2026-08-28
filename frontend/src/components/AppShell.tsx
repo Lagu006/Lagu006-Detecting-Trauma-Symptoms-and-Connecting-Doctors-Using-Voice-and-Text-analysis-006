@@ -180,6 +180,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
 
         <main className="flex-1 min-w-0 p-4 md:p-8 pb-24 lg:pb-8 animate-fade-up">{children}</main>
+        
+
+
       </div>
     </div>
   );

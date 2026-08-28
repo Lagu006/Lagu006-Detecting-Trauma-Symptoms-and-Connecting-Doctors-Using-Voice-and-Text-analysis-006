@@ -46,7 +46,7 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  const client = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {
       fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
     },
@@ -56,6 +56,62 @@ function createSupabaseClient() {
       autoRefreshToken: true,
     },
   });
+
+  // --- MOCK OVERRIDES FOR PAUSED SUPABASE ---
+  if (typeof window !== "undefined") {
+    const originalGetSession = client.auth.getSession.bind(client.auth);
+    client.auth.getSession = async () => {
+      try {
+        const res = await originalGetSession();
+        if (res.error) throw res.error;
+        if (res.data.session) return res;
+      } catch (err) {}
+      
+      const dummyStr = localStorage.getItem("traumaguard_dummy_session");
+      if (dummyStr) {
+        try {
+          const session = JSON.parse(dummyStr);
+          return { data: { session }, error: null };
+        } catch (e) {}
+      }
+      return { data: { session: null }, error: null };
+    };
+
+    const originalSignInWithPassword = client.auth.signInWithPassword.bind(client.auth);
+    client.auth.signInWithPassword = async ({ email, password }) => {
+      try {
+        const res = await originalSignInWithPassword({ email, password });
+        if (res.error && res.error.message.includes("Failed to fetch")) {
+          throw res.error;
+        }
+        return res;
+      } catch (err: any) {
+        console.warn("Supabase auth failed. Simulating email login...", err);
+        const dummySession = {
+          access_token: "dummy-token-email",
+          token_type: "bearer",
+          expires_in: 3600,
+          refresh_token: "dummy-refresh-email",
+          user: {
+            id: "dummy-email-user",
+            email: email,
+            user_metadata: { full_name: email.split("@")[0] },
+            app_metadata: { provider: "email" }
+          }
+        };
+        localStorage.setItem("traumaguard_dummy_session", JSON.stringify(dummySession));
+        return { data: { session: dummySession as any, user: dummySession.user as any }, error: null };
+      }
+    };
+    
+    const originalSignOut = client.auth.signOut.bind(client.auth);
+    client.auth.signOut = async () => {
+      localStorage.removeItem("traumaguard_dummy_session");
+      return originalSignOut();
+    };
+  }
+
+  return client;
 }
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;

@@ -1,4 +1,4 @@
-# 🛡️ TraumaGuard AI — Multilingual Clinical Trauma & Mental Health Stabilization Platform
+![alt text](image.png)# 🛡️ TraumaGuard AI — Multilingual Clinical Trauma & Mental Health Stabilization Platform
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Django](https://img.shields.io/badge/Django-4.2+-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
@@ -73,6 +73,8 @@ traumaguard-main-006/
 │       ├── main.tsx, vite-env.d.ts   # Entry files
 │       ├── components/               # AppShell.tsx and other UI wrapper components
 │       ├── integrations/             # Supabase / auth client integrations
+│       ├── lib/                      # Core utility libraries
+│       │   └── speech.ts             # [NEW] Real-time TTS audio streaming engine & fallback handlers
 │       └── routes/                   # File-based TanStack routes
 │           ├── __root.tsx            # App root layout, authentication state, query wrappers
 │           ├── auth.tsx              # Authentication login / signup interface
@@ -104,7 +106,8 @@ traumaguard-main-006/
   - `uvicorn` (`0.28.0+`): ASGI web server.
   - `pydantic` (`2.6.0+`): Data validation and models.
   - `reportlab` (`4.1.0+`): Medical-grade PDF generation.
-  - `openai` (`1.14.0+`): LLM integrations.
+  - `openai` (`1.14.0+`): LLM integrations and Streaming Text-to-Speech (TTS).
+  - `gTTS` (`2.5.1+`): Fallback Google Text-to-Speech generation.
   - `psycopg2-binary` (`2.9.9+`), `asyncpg` (`0.29.0+`), `sqlalchemy` (`2.0.28+`): DB connection and ORMs.
 - **Django Backend (`backend/`)**:
   - `Django` (`4.2` to `5.x`): Primary framework.
@@ -175,6 +178,12 @@ The engines parse patient conversations to classify mood alerts and trigger appr
 - **`doctor`**: Clinical indicators checklists (duration, functional impairments) prompting doctors lookup.
 - **`stress` / `depression`**: Emotional regulation journaling prompts and coping strategies.
 
+### C. Real-Time Text-to-Speech (TTS) Voice Engine
+The system features a low-latency, resilient Voice Engine that speaks assistant replies aloud to patients in distress:
+- **Primary Streaming Engine**: Utilizes OpenAI's `tts-1` model via `with_streaming_response`. The Django backend yields chunked byte streams (`StreamingHttpResponse`) directly to the browser's native `<audio>` element via a `GET` request, ensuring zero-latency playback even for long clinical responses.
+- **Fault-Tolerant Fallback System**: If the primary API encounters rate-limits (e.g., HTTP 429) or authentication errors, the backend eagerly catches the exception and instantly falls back to `gTTS` (Google Translate TTS).
+- **Concurrent Request Handling**: The React frontend (`speech.ts`) utilizes a strict request-tracking mechanism (via React `useRef`) to cleanly abort and overwrite orphaned audio requests, completely eliminating voice overlap or race conditions if the patient triggers multiple messages rapidly.
+
 ---
 
 ## 🌐 6. Frontend Architecture & TanStack Routes
@@ -219,7 +228,7 @@ The client application utilizes file-based routes via `@tanstack/react-router`:
 
 ### B. Django REST API (Port 8000 in Docker environment)
 - `POST` `/api/chat/`: AI conversation analysis.
-- `POST` `/api/tts/`: Converts AI text output to speech streams.
+- `GET` | `POST` `/api/tts/`: Converts AI text output to speech streams. Features OpenAI byte-streaming and automatic `gTTS` fallback.
 - `POST` `/api/emergency/dispatch/`: Logs active incidents.
 - `GET` `/api/emergency/nearby/`: Obtains crisis facilities.
 - `POST` `/api/reports/pdf/`: Django ReportLab PDF generation handler.

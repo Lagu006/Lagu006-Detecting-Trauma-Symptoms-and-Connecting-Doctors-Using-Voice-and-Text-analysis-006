@@ -5,12 +5,15 @@ import { AppShell } from "@/components/AppShell";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    let { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      // Mock user for bypass
+      data = { user: { id: "00000000-0000-0000-0000-000000000000", email: "guest@traumaguard.local" } as any };
+    }
 
     // Sync logged in user to PostgreSQL
     try {
-      fetch("http://localhost:8000/api/users/sync", {
+      fetch("/api/users/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

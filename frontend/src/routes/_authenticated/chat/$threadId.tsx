@@ -181,11 +181,48 @@ function ChatPage() {
         const res = await fetch(`${API_URL}/api/chat/threads/${threadId}/messages`);
         if (res.ok) {
           const json = await res.json();
-          return json.messages || [];
+          if (json.messages && json.messages.length > 0) return json.messages;
         }
       } catch (err) {
         console.warn("Failed to fetch thread messages from API", err);
       }
+      
+      // Fallback for demo threads if backend fails or doesn't have them
+      if (threadId?.startsWith("th_demo_")) {
+        return [
+          {
+            id: "m1",
+            role: "assistant",
+            content: `Hello there, I am here with you. Take a steady breath. How are you feeling right now?`,
+            created_at: new Date(Date.now() - 3600000).toISOString(),
+          },
+          {
+            id: "m2",
+            role: "user",
+            content: "I started feeling sudden chest tightness and intrusive thoughts about the incident.",
+            created_at: new Date(Date.now() - 3500000).toISOString(),
+          },
+          {
+            id: "m3",
+            role: "assistant",
+            content: "I hear you, and you are completely safe in this moment. Let's do a 4-second box breath together: Inhale gently for 4... Hold for 4... Exhale for 4.",
+            created_at: new Date(Date.now() - 3400000).toISOString(),
+          },
+          {
+            id: "m4",
+            role: "user",
+            content: "Doing the breath now. My shoulders feel a bit looser.",
+            created_at: new Date(Date.now() - 3300000).toISOString(),
+          },
+          {
+            id: "m5",
+            role: "assistant",
+            content: "Wonderful. Notice how your body responded to safety signals. You did great.",
+            created_at: new Date(Date.now() - 3200000).toISOString(),
+          },
+        ];
+      }
+      
       return [];
     },
   });
@@ -465,47 +502,10 @@ function ChatPage() {
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
               {messages.length === 0 && !sending && (
                 <div className="py-6 max-w-2xl mx-auto space-y-6 animate-fade-up">
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex p-3 rounded-2xl bg-primary/10 text-primary mb-1 ring-1 ring-primary/20 shadow-sm">
-                      <Sparkles className="size-7" />
-                    </div>
-                    <h3 className="font-display font-bold text-2xl tracking-tight">
-                      {t("chat.empty")}
-                    </h3>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                      TraumaGuard provides supportive, confidential guidance. Choose a quick topic below or ask your own question:
+                  <div className="text-center p-8 mt-4 bg-card rounded-2xl border border-border/40 shadow-sm">
+                    <p className="text-lg font-medium text-foreground">
+                      Hello Sir/Madam, how can I help you today?
                     </p>
-                  </div>
-
-                  {/* Suggested Query Cards */}
-                  <div className="grid sm:grid-cols-2 gap-3 pt-2">
-                    {SUGGESTED_QUERIES.map((q) => {
-                      const Icon = q.icon;
-                      return (
-                        <button
-                          key={q.id}
-                          onClick={() => handleSelectQuery(q)}
-                          className={`text-left p-4 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group flex flex-col justify-between ${q.color} bg-card cursor-pointer`}
-                        >
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2.5">
-                              <span className="p-2 rounded-lg bg-background/80 ring-1 ring-black/5 dark:ring-white/10 shrink-0">
-                                <Icon className="size-4" />
-                              </span>
-                              <span className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                                {q.title}
-                              </span>
-                            </div>
-                            {!q.isCustom && (
-                              <span className="text-[10px] uppercase tracking-wider font-bold opacity-70">
-                                {q.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[13px] leading-relaxed opacity-90">{q.description}</p>
-                        </button>
-                      );
-                    })}
                   </div>
                 </div>
               )}
