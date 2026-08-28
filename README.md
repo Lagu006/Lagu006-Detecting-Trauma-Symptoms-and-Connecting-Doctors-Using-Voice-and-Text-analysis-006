@@ -281,9 +281,3 @@ This binds:
 - React frontend: `http://localhost:3000`
 - Django REST API: `http://localhost:8000`
 - PostgreSQL: `localhost:5432`
-
----
-
-## ⚖️ 10. Medical & Regulatory Disclaimer
-
-TraumaGuard AI is designed as a supportive trauma-informed stabilization, autonomic de-escalation, and psychiatric referral tool. It is not an alternative to emergency medical services in acute life-threatening situations. In an immediate emergency, please dial **112** (National Emergency) or **14416** (Tele-MANAS Crisis Helpline).
